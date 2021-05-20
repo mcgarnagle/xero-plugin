@@ -4,3 +4,5 @@
 ![image](https://user-images.githubusercontent.com/8336141/118973312-e3adc480-b9b4-11eb-91dd-77b4683b64fb.png)
  
   
+### NOTE
+use https://currencylayer.com/dashboard?logged_in=1 for the data
