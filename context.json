@@ -1,0 +1,34 @@
+{
+  "parameters": {
+    "currencyCodes": ["USDAUD", "USDCAD", "USDLKR"]
+  },
+  "action": {
+    "name": "currencyQuote",
+    "showPrompt": false,
+    "mappingFields": [{
+      "name": "currencyCode",
+      "type": "STRING"
+    }, {
+      "name": "rate",
+      "type": "DOUBLE"
+    }, {
+      "name": "dateTime",
+      "type": "DATE_TIME"
+    }],
+    "parameters": [{
+      "name": "currencyCodes",
+      "prompt": "Currency Codes (USDAUD)",
+      "availableAtRuntime": true,
+      "type": "LIST",
+      "promptType": null
+    }]
+  },
+  "fieldMapping": {
+    "cosight__FX_ExchangeRate": {
+      "dateTime": "UpdateTime",
+      "rate": "rate",
+      "currencyCode": "currencyCode"
+    }
+  },
+  "CONTEXT_PATH": "s3://quantum.store.test.cosight.com.au/cosight/system/plugin/runtime/42aacc87-24bc-4418-9f6c-9161afee6c9b"
+}
