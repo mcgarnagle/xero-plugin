@@ -14,10 +14,12 @@
     "version":"1.0.0-SNAPSHOT",
     "path":"cosight/forex-plugin-0.0.1-SNAPSHOT.jar"
   },
-  "actions":[
+  "actions": [
     {
       "name":"currencyQuote",
       "showPrompt": false,
+      "ruleProcessType": "merge-batch",
+      "batchSize": "100",
       "mappingFields":[
         {
           "name":"currencyCode",
@@ -32,12 +34,12 @@
           "type":"DATE_TIME"
         }
       ],
-      "parameters":[
+      "parameters": [
         {
           "name":"currencyCodes",
           "prompt": "Currency Codes (USDAUD)",
           "type":"LIST",
-          "prmptType":"simple"
+          "promptType":"simple"
         }
       ]
     }
