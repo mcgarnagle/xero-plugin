@@ -18,7 +18,7 @@
     {
       "name":"currencyQuote",
       "showPrompt": false,
-      "ruleProcessType": "merge-batch",
+      "ruleProcessType": "merge",
       "batchSize": "100",
       "mappingFields":[
         {
