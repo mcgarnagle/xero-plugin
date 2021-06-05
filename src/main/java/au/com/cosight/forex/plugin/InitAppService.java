@@ -4,6 +4,7 @@ import au.com.cosight.entity.domain.EntityInstance;
 import au.com.cosight.forex.plugin.service.ForexQuoteService;
 import au.com.cosight.sdk.plugin.runtime.CosightExecutionContext;
 import au.com.cosight.sdk.plugin.runtime.CosightRuntimeFieldMap;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -18,9 +19,11 @@ public class InitAppService implements CommandLineRunner {
 
     private final CosightExecutionContext cosightExecutionContext;
     private final ForexQuoteService forexQuoteService;
-    public InitAppService(CosightExecutionContext cosightExecutionContext, ForexQuoteService forexQuoteService) {
+    private final ObjectMapper objectMapper;
+    public InitAppService(CosightExecutionContext cosightExecutionContext, ForexQuoteService forexQuoteService, ObjectMapper objectMapper) {
         this.cosightExecutionContext = cosightExecutionContext;
         this.forexQuoteService = forexQuoteService;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -37,6 +40,7 @@ public class InitAppService implements CommandLineRunner {
         if (!"currencyQuote".equals(args[0])) {
             throw new IllegalStateException("Invalid action present");
         }
+        logger.info("RUNTIME CONTEXT: {}",objectMapper.writeValueAsString(cosightExecutionContext));
         List<String> currencyCodes = (List<String>)cosightExecutionContext.getParameters().get("currencyCodes");
         logger.info("processing {}",currencyCodes);
         if (currencyCodes == null) {

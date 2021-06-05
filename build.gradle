@@ -6,7 +6,7 @@ plugins {
 
 group = 'au.com.cosight.forex'
 group = 'au.com.cosight.forex'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.2-SNAPSHOT'
 sourceCompatibility = '1.8'
 
 repositories {
@@ -24,7 +24,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	//
 	//implementation files('../../develop/fintrix-repo/cosight-sdk/build/libs/cosight-sdk-1.0.20-SNAPSHOT.jar')
-	implementation 'au.com.cosight:cosight-sdk:1.0.21-SNAPSHOT'
+	implementation 'au.com.cosight:cosight-sdk:1.0.22-SNAPSHOT'
 	implementation 'org.springframework:spring-web:5.3.5'
 	implementation 'au.com.cosight:cosight-model:1.2.4-SNAPSHOT'
 	implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
