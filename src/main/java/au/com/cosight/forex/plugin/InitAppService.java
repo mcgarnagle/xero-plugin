@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
@@ -41,7 +42,13 @@ public class InitAppService implements CommandLineRunner {
             throw new IllegalStateException("Invalid action present");
         }
         logger.info("RUNTIME CONTEXT: {}",objectMapper.writeValueAsString(cosightExecutionContext));
-        List<String> currencyCodes = (List<String>)cosightExecutionContext.getParameters().get("currencyCodes");
+       final List<String> currencyCodes = (List<String>) cosightExecutionContext.getParameters().get("currencyCodes");
+        if (cosightExecutionContext.isBatchProcess()) {
+            logger.info("BATCH PROCESSING , BATCH SIZE {}",cosightExecutionContext.getParametersBatch().size());
+            cosightExecutionContext.getParametersBatch().forEach( m ->{
+                currencyCodes.addAll((List<String>) cosightExecutionContext.getParameters().get("currencyCodes"));
+            });
+        }
         logger.info("processing {}",currencyCodes);
         if (currencyCodes == null) {
             throw new IllegalStateException("missing currency code");
