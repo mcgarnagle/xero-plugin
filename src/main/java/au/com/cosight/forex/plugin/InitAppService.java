@@ -46,7 +46,8 @@ public class InitAppService implements CommandLineRunner {
         if (cosightExecutionContext.isBatchProcess()) {
             logger.info("BATCH PROCESSING , BATCH SIZE {}",cosightExecutionContext.getParametersBatch().size());
             cosightExecutionContext.getParametersBatch().forEach( m ->{
-                currencyCodes.addAll((List<String>) cosightExecutionContext.getParameters().get("currencyCodes"));
+                logger.info("{}",m);
+                currencyCodes.addAll((List<String>) m.get("currencyCodes"));
             });
         }
         logger.info("processing {}",currencyCodes);
