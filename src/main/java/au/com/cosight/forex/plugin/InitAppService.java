@@ -42,13 +42,20 @@ public class InitAppService implements CommandLineRunner {
             throw new IllegalStateException("Invalid action present");
         }
         logger.info("RUNTIME CONTEXT: {}",objectMapper.writeValueAsString(cosightExecutionContext));
-       final List<String> currencyCodes = (List<String>) cosightExecutionContext.getParameters().get("currencyCodes");
+
+        final List<String> currencyCodes = new ArrayList<>();
+        //support both batch process & non batch ( not needed if you define it in the manifest. user wont be able to change it
         if (cosightExecutionContext.isBatchProcess()) {
+            // if batch process , use cosightExecutionContext.getParametersBatch();
             logger.info("BATCH PROCESSING , BATCH SIZE {}",cosightExecutionContext.getParametersBatch().size());
             cosightExecutionContext.getParametersBatch().forEach( m ->{
                 logger.info("{}",m);
                 currencyCodes.addAll((List<String>) m.get("currencyCodes"));
             });
+        }
+        else {
+            // non batch process cosightExecutionContext.getParameters()
+            currencyCodes.addAll ((List<String>) cosightExecutionContext.getParameters().get("currencyCodes"));
         }
         logger.info("processing {}",currencyCodes);
         if (currencyCodes == null) {
