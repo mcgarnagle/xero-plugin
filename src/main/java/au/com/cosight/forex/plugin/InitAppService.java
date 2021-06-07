@@ -44,7 +44,7 @@ public class InitAppService implements CommandLineRunner {
         logger.info("RUNTIME CONTEXT: {}",objectMapper.writeValueAsString(cosightExecutionContext));
 
         final List<String> currencyCodes = new ArrayList<>();
-        //support both batch process & non batch ( not needed if you define it in the manifest. user wont be able to change it
+        //support both batch process . if you define as for-each then no need to support batch
         if (cosightExecutionContext.isBatchProcess()) {
             // if batch process , use cosightExecutionContext.getParametersBatch();
             logger.info("BATCH PROCESSING , BATCH SIZE {}",cosightExecutionContext.getParametersBatch().size());
@@ -54,7 +54,7 @@ public class InitAppService implements CommandLineRunner {
             });
         }
         else {
-            // non batch process cosightExecutionContext.getParameters()
+            // non batch process / run through 'run radial button' cosightExecutionContext.getParameters()
             currencyCodes.addAll ((List<String>) cosightExecutionContext.getParameters().get("currencyCodes"));
         }
         logger.info("processing {}",currencyCodes);
