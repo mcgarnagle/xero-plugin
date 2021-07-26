@@ -4,9 +4,9 @@ plugins {
 	id 'java'
 }
 
-group = 'au.com.cosight.forex'
-group = 'au.com.cosight.forex'
-version = '0.0.2-SNAPSHOT'
+group = 'au.com.cosight.xero'
+group = 'au.com.cosight.xero'
+version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
 
 repositories {

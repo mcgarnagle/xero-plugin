@@ -1,4 +1,4 @@
-package au.com.cosight.forex.plugin.service;
+package au.com.cosight.xero.plugin.service;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;

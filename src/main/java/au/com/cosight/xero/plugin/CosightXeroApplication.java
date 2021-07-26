@@ -1,4 +1,4 @@
-package au.com.cosight.forex.plugin;
+package au.com.cosight.xero.plugin;
 
 
 import au.com.cosight.sdk.annotation.EnableCosightRuntimeContext;
@@ -7,10 +7,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @EnableCosightRuntimeContext
-public class CosightForexApplication {
+public class CosightXeroApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CosightForexApplication.class, args);
+		SpringApplication.run(CosightXeroApplication.class, args);
 	}
 
 }

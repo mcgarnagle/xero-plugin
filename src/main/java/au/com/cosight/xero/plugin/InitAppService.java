@@ -1,7 +1,7 @@
-package au.com.cosight.forex.plugin;
+package au.com.cosight.xero.plugin;
 
 import au.com.cosight.entity.domain.EntityInstance;
-import au.com.cosight.forex.plugin.service.ForexQuoteService;
+import au.com.cosight.xero.plugin.service.ForexQuoteService;
 import au.com.cosight.sdk.oauth2callback.Oauth2Details;
 import au.com.cosight.sdk.plugin.runtime.CosightExecutionContext;
 import au.com.cosight.sdk.plugin.runtime.CosightRuntimeFieldMap;

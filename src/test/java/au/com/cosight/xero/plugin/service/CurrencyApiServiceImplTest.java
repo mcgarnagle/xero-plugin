@@ -1,6 +1,6 @@
-package au.com.cosight.forex.plugin.service;
+package au.com.cosight.xero.plugin.service;
 
-import au.com.cosight.forex.plugin.service.dto.ForexQuoteDTO;
+import au.com.cosight.xero.plugin.service.dto.ForexQuoteDTO;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

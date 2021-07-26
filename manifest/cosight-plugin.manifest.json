@@ -1,6 +1,6 @@
 {
   "uuid":"5eabc2d9-0b69-4b4f-a562-6d8b1992aad5",
-  "name":"forex-plugin",
+  "name":"xero-plugin",
   "plugin-type":"springBoot",
   "availability":"global",
   "secrets":[
@@ -10,9 +10,9 @@
     }
   ],
   "info": {
-    "jar":"forex-plugin-0.0.1-SNAPSHOT.jar",
+    "jar":"xero-plugin-0.0.1-SNAPSHOT.jar",
     "version":"1.0.0-SNAPSHOT",
-    "path":"cosight/forex-plugin-0.0.1-SNAPSHOT.jar"
+    "path":"cosight/xero-plugin-0.0.1-SNAPSHOT.jar"
   },
   "actions": [
     {

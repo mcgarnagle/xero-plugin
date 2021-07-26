@@ -1,7 +1,6 @@
-package au.com.cosight.forex.plugin.service;
+package au.com.cosight.xero.plugin.service;
 
 import au.com.cosight.entity.domain.EntityInstance;
-import au.com.cosight.forex.plugin.service.dto.ForexQuoteDTO;
 import au.com.cosight.sdk.plugin.runtime.CosightRuntimeFieldMap;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package au.com.cosight.forex.plugin.service.dto;
+package au.com.cosight.xero.plugin.service.dto;
 
 import java.time.LocalDateTime;
 import java.util.Date;

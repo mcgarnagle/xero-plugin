@@ -1,4 +1,4 @@
-package au.com.cosight.forex.plugin.service;
+package au.com.cosight.xero.plugin.service;
 
 public class RowRate {
 
