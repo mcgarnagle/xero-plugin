@@ -2,6 +2,7 @@ package au.com.cosight.forex.plugin;
 
 import au.com.cosight.entity.domain.EntityInstance;
 import au.com.cosight.forex.plugin.service.ForexQuoteService;
+import au.com.cosight.sdk.oauth2callback.Oauth2Details;
 import au.com.cosight.sdk.plugin.runtime.CosightExecutionContext;
 import au.com.cosight.sdk.plugin.runtime.CosightRuntimeFieldMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,8 +28,20 @@ public class InitAppService implements CommandLineRunner {
         this.objectMapper = objectMapper;
     }
 
+
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String...args) throws Exception {
+        logger.info("================================== START PROCESS ========================================");
+
+        Oauth2Details deets = new Oauth2Details(cosightExecutionContext);
+//        Oauth2Details deets = oAuth2Manager.getOauth2Details();
+        logger.info("context has values {} {}",cosightExecutionContext.getPluginName(),cosightExecutionContext.getPluginUuId());
+        logger.info("context {}",cosightExecutionContext.toString());
+        String accessToken = deets.getAccessToken();
+        logger.info("ACCESS TOKEN ="+accessToken);
+
+    }
+    public void run2(String... args) throws Exception {
         logger.info("================================== START PROCESS ========================================");
         long ts = System.currentTimeMillis();
         if (args.length == 0) {

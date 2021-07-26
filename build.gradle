@@ -23,8 +23,8 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	//
-	//implementation files('../../develop/fintrix-repo/cosight-sdk/build/libs/cosight-sdk-1.0.20-SNAPSHOT.jar')
-	implementation 'au.com.cosight:cosight-sdk:1.0.22-SNAPSHOT'
+	implementation files('../../fintrixGitRepo/sdk/build/libs/cosight-sdk-1.1.0-SNAPSHOT.jar')
+//	implementation 'au.com.cosight:cosight-sdk:1.0.22-SNAPSHOT'
 	implementation 'org.springframework:spring-web:5.3.5'
 	implementation 'au.com.cosight:cosight-model:1.2.4-SNAPSHOT'
 	implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
@@ -33,6 +33,8 @@ dependencies {
 	implementation platform('com.amazonaws:aws-java-sdk-bom:1.11.633')
 	implementation 'com.amazonaws:aws-java-sdk-s3'
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.3'
+	compile group: 'com.amazonaws', name: 'aws-java-sdk-dynamodb', version: '1.11.816'
+
 	testImplementation group: 'junit', name: 'junit', version: '4.12'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
