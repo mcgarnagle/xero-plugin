@@ -18,6 +18,8 @@ import java.util.List;
 public class InitAppService implements CommandLineRunner {
     private static Logger logger = LoggerFactory.getLogger("forex-plugin");
 
+    // will have a parameter for 'classPrefix' that will be used to prefix classes
+
 
     private final CosightExecutionContext cosightExecutionContext;
     private final ForexQuoteService forexQuoteService;
@@ -33,12 +35,154 @@ public class InitAppService implements CommandLineRunner {
     public void run(String...args) throws Exception {
         logger.info("================================== START PROCESS ========================================");
 
+        long ts = System.currentTimeMillis();
+        if (args.length == 0) {
+            throw new IllegalStateException("Unknown Entry point, no entry point provided");
+        }
+
+        String classPrefix = (String)cosightExecutionContext.getParameters().get("classPrefix");
+        logger.info("================================== USING CLASS PREFIX {} ========================================",classPrefix);
+
         Oauth2Details deets = new Oauth2Details(cosightExecutionContext);
 //        Oauth2Details deets = oAuth2Manager.getOauth2Details();
         logger.info("context has values {} {}",cosightExecutionContext.getPluginName(),cosightExecutionContext.getPluginUuId());
         logger.info("context {}",cosightExecutionContext.toString());
+        logger.info("================================== FETCHING OAUTH2 DETAILS ========================================");
         String accessToken = deets.getAccessToken();
+        logger.info("================================== FETCHING OAUTH2 DETAILS ========================================");
         logger.info("ACCESS TOKEN ="+accessToken);
+        logger.info("================================== FETCHING OAUTH2 DETAILS SUCCESS ========================================");
+
+        // in here we may also build a config entity so that we can check on the state of the entities and see if they
+        // need updating etc....
+
+        // build contacts
+        logger.info("================================== CHECKING IF CONTACTS BUILT ========================================");
+        // we'll put check in here later. need to update SDK
+        logger.info("================================== CHECKING IF CONTACTS BUILT SUCCESS ========================================");
+
+        // now lets process the action
+        if("accounts.getContacts".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getAccounts".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getBankTransactions".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getBankTransfers".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getBatchPayments".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getBudgets".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getContactGroups".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getCreditNotes".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getCurrencies".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getEmployees".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getExpenseClaims".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getInvoiceReminders".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getInvoices".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getItems".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getJournals".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getLinkedTransactions".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getManualJournals".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getOrganisations".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getOverpayments".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getPayments".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getPaymentServices".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getPrepayments".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getPurchaseOrders".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getQuotes".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getReceipts".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getRepeatingInvoices".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getReports".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getSetup".equalsIgnoreCase(args[0])){
+
+
+        }
+        if("accounts.getTaxRates".equalsIgnoreCase(args[0])){
+
+
+        }
+    }
+    private boolean checkContactsEntityExists(){
+        return false;
+    }
+    private void buildContactsEntity(){
 
     }
     public void run2(String... args) throws Exception {

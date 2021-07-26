@@ -1,5 +1,6 @@
 {
   "parameters": {
+    "classPrefix": "DEMO_XERO_",
     "currencyCodes": ["USDAUD", "USDCAD", "USDLKR"]
   },
   "action": {
