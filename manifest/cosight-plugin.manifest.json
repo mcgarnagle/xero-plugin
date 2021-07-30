@@ -14,11 +14,11 @@
   "secrets": [
     {
       "key": "clientId",
-      "type": "28026EA9E21A4F5495426035B83AFA9F"
+      "type": "xxx"
     },
     {
       "key": "clientSecret",
-      "type": "8DkvXnzlLfPZhFOz-PC193LH5f_DxEml8Nk1POlFda9HVwQC"
+      "type": "xx"
     }
   ],
   "info": {

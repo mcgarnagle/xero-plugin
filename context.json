@@ -33,7 +33,7 @@
   },
   "pluginName": "xeroplugin",
   "pluginUuId": "pluginuuidhere",
-  "clientId" : "28026EA9E21A4F5495426035B83AFA9F",
-  "clientSecret": "8DkvXnzlLfPZhFOz-PC193LH5f_DxEml8Nk1POlFda9HVwQC",
+  "clientId" : "xxx",
+  "clientSecret": "xxx",
   "CONTEXT_PATH": "s3://quantum.store.test.cosight.com.au/cosight/system/plugin/runtime/42aacc87-24bc-4418-9f6c-9161afee6c9b"
 }

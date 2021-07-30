@@ -23,6 +23,7 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	//
+
 	implementation files('../../fintrixGitRepo/sdk/build/libs/cosight-sdk-1.1.0-SNAPSHOT.jar')
 //	implementation 'au.com.cosight:cosight-sdk:1.0.22-SNAPSHOT'
 	implementation 'org.springframework:spring-web:5.3.5'

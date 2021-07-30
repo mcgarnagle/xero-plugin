@@ -4,6 +4,7 @@ import au.com.cosight.entity.domain.EntityInstance;
 import au.com.cosight.sdk.oauth2callback.Oauth2Details;
 import au.com.cosight.sdk.plugin.runtime.CosightExecutionContext;
 import au.com.cosight.sdk.plugin.runtime.CosightRuntimeFieldMap;
+import au.com.cosight.xero.plugin.service.EntityManagementServiceImpl;
 import au.com.cosight.xero.plugin.service.ForexQuoteService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xero.api.ApiClient;
@@ -27,13 +28,14 @@ public class InitAppService implements CommandLineRunner {
     private final CosightExecutionContext cosightExecutionContext;
     private final ForexQuoteService forexQuoteService;
     private final ObjectMapper objectMapper;
+    private final EntityManagementServiceImpl entityManagementService;
 
-    public InitAppService(CosightExecutionContext cosightExecutionContext, ForexQuoteService forexQuoteService, ObjectMapper objectMapper) {
+    public InitAppService(CosightExecutionContext cosightExecutionContext, ForexQuoteService forexQuoteService, ObjectMapper objectMapper, EntityManagementServiceImpl entityManagementService) {
         this.cosightExecutionContext = cosightExecutionContext;
         this.forexQuoteService = forexQuoteService;
         this.objectMapper = objectMapper;
+        this.entityManagementService = entityManagementService;
     }
-
 
     @Override
     public void run(String... args) throws Exception {
@@ -63,12 +65,14 @@ public class InitAppService implements CommandLineRunner {
         // build contacts
         logger.info("================================== CHECKING IF CONTACTS BUILT ========================================");
         // we'll put check in here later. need to update SDK
+        buildContactsEntity();
         logger.info("================================== CHECKING IF CONTACTS BUILT SUCCESS ========================================");
 
         // now lets process the action
         if ("accounts.getContacts".equalsIgnoreCase(args[0])) {
             logger.info("================== FETCHING ACCOUNTS.CONTACTS FROM XERO =====================");
             if (args.length != 2) {
+
                 logger.error("Need to provide the action and the tenant-id for xero for this method");
                 throw new IllegalStateException("Need to provide the action and the tenant-id for xero for this method");
             }
@@ -210,7 +214,7 @@ public class InitAppService implements CommandLineRunner {
     }
 
     private void buildContactsEntity() {
-
+        entityManagementService.createContactClass("xero_");
     }
 
     public void run2(String... args) throws Exception {
