@@ -31,8 +31,8 @@
       "currencyCode": "currencyCode"
     }
   },
-  "pluginName": "xeroplugin",
-  "pluginUuId": "pluginuuidhere",
+  "pluginName": "xero-plugin",
+  "pluginUuId": "1234-4536-23432-54353",
   "clientId" : "xxx",
   "clientSecret": "xxx",
   "CONTEXT_PATH": "s3://quantum.store.test.cosight.com.au/cosight/system/plugin/runtime/42aacc87-24bc-4418-9f6c-9161afee6c9b"

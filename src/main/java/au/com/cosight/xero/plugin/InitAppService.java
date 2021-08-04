@@ -1,7 +1,7 @@
 package au.com.cosight.xero.plugin;
 
 import au.com.cosight.entity.domain.EntityInstance;
-import au.com.cosight.sdk.oauth2callback.Oauth2Details;
+import au.com.cosight.sdk.auth.external.oauth.ExternalOAuth2Credentials;
 import au.com.cosight.sdk.plugin.runtime.CosightExecutionContext;
 import au.com.cosight.sdk.plugin.runtime.CosightRuntimeFieldMap;
 import au.com.cosight.xero.plugin.service.EntityManagementServiceImpl;
@@ -45,16 +45,14 @@ public class InitAppService implements CommandLineRunner {
         if (args.length == 0) {
             throw new IllegalStateException("Unknown Entry point, no entry point provided");
         }
-
+        ExternalOAuth2Credentials deets = ExternalOAuth2Credentials.getInstance();
         String classPrefix = (String) cosightExecutionContext.getParameters().get("classPrefix");
         logger.info("================================== USING CLASS PREFIX {} ========================================", classPrefix);
-
-        Oauth2Details deets = new Oauth2Details(cosightExecutionContext);
-//        Oauth2Details deets = oAuth2Manager.getOauth2Details();
-        logger.info("context has values {} {}", cosightExecutionContext.getPluginName(), cosightExecutionContext.getPluginUuId());
+        logger.info("context has values {} {}", cosightExecutionContext.getRuntimeInfo().getPluginName(), cosightExecutionContext.getRuntimeInfo().getPluginUuid());
         logger.info("context {}", cosightExecutionContext.toString());
         logger.info("================================== FETCHING OAUTH2 DETAILS ========================================");
-        String accessToken = deets.getAccessToken();
+        String accessToken = deets.getToken().getAccessToken();
+
         logger.info("================================== FETCHING OAUTH2 DETAILS ========================================");
         logger.info("ACCESS TOKEN =" + accessToken);
         logger.info("================================== FETCHING OAUTH2 DETAILS SUCCESS ========================================");
@@ -65,7 +63,7 @@ public class InitAppService implements CommandLineRunner {
         // build contacts
         logger.info("================================== CHECKING IF CONTACTS BUILT ========================================");
         // we'll put check in here later. need to update SDK
-        buildContactsEntity();
+//        buildContactsEntity();
         logger.info("================================== CHECKING IF CONTACTS BUILT SUCCESS ========================================");
 
         // now lets process the action
