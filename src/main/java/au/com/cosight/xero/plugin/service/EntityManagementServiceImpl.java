@@ -107,7 +107,6 @@ public class EntityManagementServiceImpl {
                 .addField(new DataFieldsDTO().withName("XeroNetworkKey")
                         .withDataType(CosightDataType.STRING))
                 .addIndex("ContactID");
-        ;
 
         //Above is the flat contact object, it has many other things that hang off it that aren't flat that
         //we need to create as well as the relationships between them.
@@ -116,10 +115,11 @@ public class EntityManagementServiceImpl {
             contact = entityServiceWrapper.createEntityStructure(request);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            if(e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
+            if (e.getMessage().contains("Duplicated Entity Name")) {
+                System.out.println("Entity already created - assume everything is done for now, return");
+                return;
                 // will have to think about an update mechanism here with versioning etc.
-            }else{
+            } else {
                 e.printStackTrace();
             }
         }
@@ -143,16 +143,15 @@ public class EntityManagementServiceImpl {
             contactGroup = entityServiceWrapper.createEntityStructure(contactGroupRequest);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            if(e.getMessage().contains("Duplicated Entity Name")) {
+            if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
                 // will have to think about an update mechanism here with versioning etc.
-            }else{
+            } else {
                 e.printStackTrace();
             }
         }
 
 
-        // Now lets do relationships
         RelationshipsCreateCreateRequest contactToContactGroup =
                 new RelationshipsCreateCreateRequest().withName("ContactToContactGroup")
                         .withFromEntityId(contact.getId())
@@ -164,23 +163,13 @@ public class EntityManagementServiceImpl {
             contactToContactGroupResult = relationshipServiceWrapper.createRelationship(contactToContactGroup);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            if(e.getMessage().contains("Duplicated Entity Name")) {
+            if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
                 // will have to think about an update mechanism here with versioning etc.
-            }else{
+            } else {
                 e.printStackTrace();
             }
         }
-        System.out.println(contactToContactGroupResult.getId() + " -> relationship desc " + contactToContactGroupResult.getDescription()
-                + " -- for " + contactToContactGroupResult.getName());
-
-        //just for testing...
-        if(true) return;
-
-
-
-
-
 
 
         // Address
@@ -209,15 +198,35 @@ public class EntityManagementServiceImpl {
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("Region")
                         .withDataType(CosightDataType.STRING));
-
+        EntitiesDTO address = null;
         try {
-            EntitiesDTO address = entityServiceWrapper.createEntityStructure(addressRequest);
+            address = entityServiceWrapper.createEntityStructure(addressRequest);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            if(e.getMessage().contains("Duplicated Entity Name")) {
+            if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
                 // will have to think about an update mechanism here with versioning etc.
-            }else{
+            } else {
+                e.printStackTrace();
+            }
+        }
+
+
+        RelationshipsCreateCreateRequest contactToAddress =
+                new RelationshipsCreateCreateRequest().withName("ContactToAddress")
+                        .withFromEntityId(contact.getId())
+                        .withToEntityId(address.getId())
+                        .withDescription("Link between Contact and Address");
+
+        RelationshipsDTO contactToAddressResult = null;
+        try {
+            contactToAddressResult = relationshipServiceWrapper.createRelationship(contactToAddress);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            if (e.getMessage().contains("Duplicated Entity Name")) {
+                System.out.println("Entity already created - continue");
+                // will have to think about an update mechanism here with versioning etc.
+            } else {
                 e.printStackTrace();
             }
         }
@@ -240,17 +249,39 @@ public class EntityManagementServiceImpl {
                         .withDataType(CosightDataType.STRING))
                 .addIndex("AttachmentID");
         ;
+        EntitiesDTO attachment = null;
         try {
-            EntitiesDTO attachment = entityServiceWrapper.createEntityStructure(attachmentRequest);
+            attachment = entityServiceWrapper.createEntityStructure(attachmentRequest);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            if(e.getMessage().contains("Duplicated Entity Name")) {
+            if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
                 // will have to think about an update mechanism here with versioning etc.
-            }else{
+            } else {
                 e.printStackTrace();
             }
         }
+
+
+        RelationshipsCreateCreateRequest contactToAttachment =
+                new RelationshipsCreateCreateRequest().withName("ContactToAttachment")
+                        .withFromEntityId(contact.getId())
+                        .withToEntityId(attachment.getId())
+                        .withDescription("Link between Contact and Contact Group");
+
+        RelationshipsDTO contactToAttachmentResult = null;
+        try {
+            contactToAttachmentResult = relationshipServiceWrapper.createRelationship(contactToAttachment);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            if (e.getMessage().contains("Duplicated Entity Name")) {
+                System.out.println("Entity already created - continue");
+                // will have to think about an update mechanism here with versioning etc.
+            } else {
+                e.printStackTrace();
+            }
+        }
+
         // Balances - these can be part of root instead of own object
 
 //        EntitiesCreateCreateRequest balancesRequest = new EntitiesCreateCreateRequest().withName(prefix + "Balances")
@@ -279,15 +310,35 @@ public class EntityManagementServiceImpl {
                 .addField(new DataFieldsDTO().withName("Details")
                         .withDataType(CosightDataType.STRING))
                 .addIndex("BankAccountName");
-        ;
+
+        EntitiesDTO batchPaymentDetails = null;
         try {
-            EntitiesDTO batchpaymentDetails = entityServiceWrapper.createEntityStructure(batchpaymentDetailsRequest);
+            batchPaymentDetails = entityServiceWrapper.createEntityStructure(batchpaymentDetailsRequest);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            if(e.getMessage().contains("Duplicated Entity Name")) {
+            if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
                 // will have to think about an update mechanism here with versioning etc.
-            }else{
+            } else {
+                e.printStackTrace();
+            }
+        }
+
+        RelationshipsCreateCreateRequest contactTobatchPaymentDetails =
+                new RelationshipsCreateCreateRequest().withName("ContactToBatchPaymentDetails")
+                        .withFromEntityId(contact.getId())
+                        .withToEntityId(batchPaymentDetails.getId())
+                        .withDescription("Link between Contact and Contact Group");
+
+        RelationshipsDTO contactTobatchPaymentDetailsResult = null;
+        try {
+            contactTobatchPaymentDetailsResult = relationshipServiceWrapper.createRelationship(contactTobatchPaymentDetails);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            if (e.getMessage().contains("Duplicated Entity Name")) {
+                System.out.println("Entity already created - continue");
+                // will have to think about an update mechanism here with versioning etc.
+            } else {
                 e.printStackTrace();
             }
         }
@@ -306,15 +357,35 @@ public class EntityManagementServiceImpl {
                 .addField(new DataFieldsDTO().withName("IncludeInEmails")
                         .withDataType(CosightDataType.BOOLEAN))
                 .addIndex("EmailAddress");
-        ;
+        EntitiesDTO contactPerson = null;
         try {
-            EntitiesDTO contactPerson = entityServiceWrapper.createEntityStructure(contactPersonRequest);
+            contactPerson = entityServiceWrapper.createEntityStructure(contactPersonRequest);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            if(e.getMessage().contains("Duplicated Entity Name")) {
+            if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
                 // will have to think about an update mechanism here with versioning etc.
-            }else{
+            } else {
+                e.printStackTrace();
+            }
+        }
+
+
+        RelationshipsCreateCreateRequest contactTocontactPerson =
+                new RelationshipsCreateCreateRequest().withName("ContactToContactPerson")
+                        .withFromEntityId(contact.getId())
+                        .withToEntityId(contactPerson.getId())
+                        .withDescription("Link between Contact and Contact Group");
+
+        RelationshipsDTO contactTocontactPersonResult = null;
+        try {
+            contactTocontactPersonResult = relationshipServiceWrapper.createRelationship(contactTocontactPerson);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            if (e.getMessage().contains("Duplicated Entity Name")) {
+                System.out.println("Entity already created - continue");
+                // will have to think about an update mechanism here with versioning etc.
+            } else {
                 e.printStackTrace();
             }
         }
@@ -330,14 +401,35 @@ public class EntityManagementServiceImpl {
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("PhoneType")
                         .withDataType(CosightDataType.STRING));
+        EntitiesDTO phone = null;
         try {
-            EntitiesDTO phone = entityServiceWrapper.createEntityStructure(phoneRequest);
+            phone = entityServiceWrapper.createEntityStructure(phoneRequest);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            if(e.getMessage().contains("Duplicated Entity Name")) {
+            if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
                 // will have to think about an update mechanism here with versioning etc.
-            }else{
+            } else {
+                e.printStackTrace();
+            }
+        }
+
+
+        RelationshipsCreateCreateRequest contactTophone =
+                new RelationshipsCreateCreateRequest().withName("ContactToPhone")
+                        .withFromEntityId(contact.getId())
+                        .withToEntityId(phone.getId())
+                        .withDescription("Link between Contact and Contact Group");
+
+        RelationshipsDTO contactTophoneResult = null;
+        try {
+            contactTophoneResult = relationshipServiceWrapper.createRelationship(contactTophone);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            if (e.getMessage().contains("Duplicated Entity Name")) {
+                System.out.println("Entity already created - continue");
+                // will have to think about an update mechanism here with versioning etc.
+            } else {
                 e.printStackTrace();
             }
         }
@@ -350,34 +442,76 @@ public class EntityManagementServiceImpl {
                 .addField(new DataFieldsDTO().withName("TrackingCategoryName")
                         .withDataType(CosightDataType.STRING).withLabel(true))
                 .addIndex("TrackingOptionName");
+        EntitiesDTO salesTrackingCategory = null;
         try {
-            EntitiesDTO salesTrackingCat = entityServiceWrapper.createEntityStructure(salesTrackingCatRequest);
+            salesTrackingCategory = entityServiceWrapper.createEntityStructure(salesTrackingCatRequest);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            if(e.getMessage().contains("Duplicated Entity Name")) {
+            if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
                 // will have to think about an update mechanism here with versioning etc.
-            }else{
+            } else {
                 e.printStackTrace();
             }
         }
+
+
+        RelationshipsCreateCreateRequest contactTosalesTrackingCategory =
+                new RelationshipsCreateCreateRequest().withName("ContactToSalesTrackingCategory")
+                        .withFromEntityId(contact.getId())
+                        .withToEntityId(salesTrackingCategory.getId())
+                        .withDescription("Link between Contact and Contact Group");
+
+        RelationshipsDTO contactTosalesTrackingCategoryResult = null;
+        try {
+            contactTosalesTrackingCategoryResult = relationshipServiceWrapper.createRelationship(contactTosalesTrackingCategory);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            if (e.getMessage().contains("Duplicated Entity Name")) {
+                System.out.println("Entity already created - continue");
+                // will have to think about an update mechanism here with versioning etc.
+            } else {
+                e.printStackTrace();
+            }
+        }
+
 
         // ValidationError
         ValidationError v = new ValidationError();
         EntitiesCreateCreateRequest validationErrorReq = new EntitiesCreateCreateRequest().withName(prefix + "ValidationError")
                 .addField(new DataFieldsDTO().withName("Message")
                         .withDataType(CosightDataType.STRING).withLabel(true));
+        EntitiesDTO validationError = null;
         try {
-            EntitiesDTO validationError = entityServiceWrapper.createEntityStructure(validationErrorReq);
+            validationError = entityServiceWrapper.createEntityStructure(validationErrorReq);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            if(e.getMessage().contains("Duplicated Entity Name")) {
+            if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
                 // will have to think about an update mechanism here with versioning etc.
-            }else{
+            } else {
                 e.printStackTrace();
             }
         }
 
+
+        RelationshipsCreateCreateRequest contactTovalidationError =
+                new RelationshipsCreateCreateRequest().withName("ContactToValidationError")
+                        .withFromEntityId(contact.getId())
+                        .withToEntityId(validationError.getId())
+                        .withDescription("Link between Contact and Contact Group");
+
+        RelationshipsDTO contactTovalidationErrorResult = null;
+        try {
+            contactTovalidationErrorResult = relationshipServiceWrapper.createRelationship(contactTovalidationError);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            if (e.getMessage().contains("Duplicated Entity Name")) {
+                System.out.println("Entity already created - continue");
+                // will have to think about an update mechanism here with versioning etc.
+            } else {
+                e.printStackTrace();
+            }
+        }
     }
 }
