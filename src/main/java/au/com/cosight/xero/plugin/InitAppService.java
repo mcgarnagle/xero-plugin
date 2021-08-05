@@ -53,7 +53,6 @@ public class InitAppService implements CommandLineRunner {
         logger.info("================================== FETCHING OAUTH2 DETAILS ========================================");
         String accessToken = deets.getToken().getAccessToken();
 
-        logger.info("================================== FETCHING OAUTH2 DETAILS ========================================");
         logger.info("ACCESS TOKEN =" + accessToken);
         logger.info("================================== FETCHING OAUTH2 DETAILS SUCCESS ========================================");
 
@@ -63,7 +62,8 @@ public class InitAppService implements CommandLineRunner {
         // build contacts
         logger.info("================================== CHECKING IF CONTACTS BUILT ========================================");
         // we'll put check in here later. need to update SDK
-//        buildContactsEntity();
+        buildContactsEntity();
+
         logger.info("================================== CHECKING IF CONTACTS BUILT SUCCESS ========================================");
 
         // now lets process the action
