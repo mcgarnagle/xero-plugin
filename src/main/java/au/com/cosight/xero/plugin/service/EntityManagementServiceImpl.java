@@ -7,6 +7,7 @@ import au.com.cosight.entity.domain.enums.CosightDataType;
 import au.com.cosight.entity.domain.enums.EntityVisibilityTypes;
 import au.com.cosight.entity.service.dto.DataFieldsDTO;
 import au.com.cosight.entity.service.dto.EntitiesDTO;
+import au.com.cosight.entity.service.dto.ExpandedEntitiesDTO;
 import au.com.cosight.entity.service.dto.RelationshipsDTO;
 import au.com.cosight.sdk.plugin.runtime.helper.EntityServiceWrapper;
 import au.com.cosight.sdk.plugin.runtime.helper.RelationshipServiceWrapper;
@@ -30,6 +31,7 @@ public class EntityManagementServiceImpl {
         Account x = new Account();
 
         EntitiesCreateCreateRequest request = new EntitiesCreateCreateRequest()
+                .withProjectId("0")
                 .withName(prefix + PluginConstants.XERO_ENTITY_ACCOUNT)
                 .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
                 .addField(new DataFieldsDTO().withName("AccountID")
@@ -95,6 +97,7 @@ public class EntityManagementServiceImpl {
         entityServiceWrapper.auth();
         relationshipServiceWrapper.auth();
         EntitiesCreateCreateRequest request = new EntitiesCreateCreateRequest()
+                .withProjectId("0")
                 .withName(prefix + PluginConstants.XERO_ENTITY_CONTACT)
                 .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
                 .addField(new DataFieldsDTO().withName("AccountNumber")
@@ -184,7 +187,10 @@ public class EntityManagementServiceImpl {
             System.out.println(e.getMessage());
             if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - assume everything is done for now, return");
-                return;
+                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_CONTACT);
+                contact = dto.getEnitiy();
+                //
+//                return;
                 // will have to think about an update mechanism here with versioning etc.
             } else {
                 e.printStackTrace();
@@ -195,6 +201,7 @@ public class EntityManagementServiceImpl {
         // now we need to create the following and link
         // ContactGroup
         EntitiesCreateCreateRequest contactGroupRequest = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_CONTACT_GROUP)
+                .withProjectId("0")
                 .addField(new DataFieldsDTO().withName("ContactGroupID")
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("Name")
@@ -243,6 +250,7 @@ public class EntityManagementServiceImpl {
 
         // Address
         EntitiesCreateCreateRequest addressRequest = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_ADDRESS)
+                .withProjectId("0")
                 .addField(new DataFieldsDTO().withName("AddressLine1")
                         .withDataType(CosightDataType.STRING)
                         .withLabel(true))
@@ -304,6 +312,7 @@ public class EntityManagementServiceImpl {
 
         // Attachment
         EntitiesCreateCreateRequest attachmentRequest = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_ATTACHMENT)
+                .withProjectId("0")
                 .addField(new DataFieldsDTO().withName("AttachmentID")
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("ContentLength")
@@ -369,6 +378,7 @@ public class EntityManagementServiceImpl {
 
         // BatchPaymentDetails - maybe should be fields of the contact since it isn't a list.
         EntitiesCreateCreateRequest batchpaymentDetailsRequest = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_BATCH_PAYMENT_DETAILS)
+                .withProjectId("0")
                 .addField(new DataFieldsDTO().withName("BankAccountName")
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("Code")
@@ -418,6 +428,7 @@ public class EntityManagementServiceImpl {
 
         // ContactPerson
         EntitiesCreateCreateRequest contactPersonRequest = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_CONTACT_PERSON)
+                .withProjectId("0")
                 .addField(new DataFieldsDTO().withName("FirstName")
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("EmailAddress")
@@ -463,6 +474,7 @@ public class EntityManagementServiceImpl {
 
         // Phone
         EntitiesCreateCreateRequest phoneRequest = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_PHONE)
+                .withProjectId("0")
                 .addField(new DataFieldsDTO().withName("PhoneAreaCode")
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("PhoneNumber")
@@ -509,6 +521,7 @@ public class EntityManagementServiceImpl {
 
         // SalesTrackingCategory
         EntitiesCreateCreateRequest salesTrackingCatRequest = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_SALES_TRACKING_CATEGORY)
+                .withProjectId("0")
                 .addField(new DataFieldsDTO().withName("TrackingOptionName")
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("TrackingCategoryName")
@@ -551,6 +564,7 @@ public class EntityManagementServiceImpl {
         // ValidationError
         ValidationError v = new ValidationError();
         EntitiesCreateCreateRequest validationErrorReq = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_VALIDATION_ERROR)
+                .withProjectId("0")
                 .addField(new DataFieldsDTO().withName("Message")
                         .withDataType(CosightDataType.STRING).withLabel(true));
         EntitiesDTO validationError = null;

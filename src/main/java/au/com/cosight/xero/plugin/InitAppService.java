@@ -71,7 +71,7 @@ public class InitAppService implements CommandLineRunner {
         logger.info("================================== CHECKING IF CONTACTS BUILT SUCCESS ========================================");
 
         // now lets process the action
-        if ("accounts.getContacts".equalsIgnoreCase(args[0])) {
+        if ("getContacts".equalsIgnoreCase(args[0])) {
             logger.info("================== FETCHING ACCOUNTS.CONTACTS FROM XERO =====================");
             if (args.length != 2) {
 
@@ -88,7 +88,7 @@ public class InitAppService implements CommandLineRunner {
                 Contacts contacts = accountingApi.getContacts(accessToken, xeroTenantId, null, null, null, null, null, null, null);
 
                 contacts.getContacts().forEach(contact -> {
-                    logger.info("Contact details {}",contact.toString());
+                    logger.info("Contact RCVD {}",contact.getContactID());
                     contactService.upsertContact(contact);
 
                 });
@@ -211,6 +211,9 @@ public class InitAppService implements CommandLineRunner {
 
 
         }
+
+        logger.info("================================== FINISHED ========================================");
+
     }
 
     private boolean checkContactsEntityExists() {
