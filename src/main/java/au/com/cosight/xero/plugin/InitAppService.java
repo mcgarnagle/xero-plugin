@@ -71,7 +71,7 @@ public class InitAppService implements CommandLineRunner {
         logger.info("================================== CHECKING IF CONTACTS BUILT SUCCESS ========================================");
 
         // now lets process the action
-        if ("accounts.getContacts".equalsIgnoreCase(args[0])) {
+        if ("getContacts".equalsIgnoreCase(args[0])) {
             logger.info("================== FETCHING ACCOUNTS.CONTACTS FROM XERO =====================");
             if (args.length != 2) {
 
