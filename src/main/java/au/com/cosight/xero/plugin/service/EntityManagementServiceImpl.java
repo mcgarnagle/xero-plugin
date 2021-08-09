@@ -11,6 +11,7 @@ import au.com.cosight.entity.service.dto.RelationshipsDTO;
 import au.com.cosight.sdk.plugin.runtime.helper.EntityServiceWrapper;
 import au.com.cosight.sdk.plugin.runtime.helper.RelationshipServiceWrapper;
 import au.com.cosight.xero.plugin.PluginConstants;
+import com.xero.models.accounting.Account;
 import com.xero.models.accounting.ValidationError;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,67 @@ public class EntityManagementServiceImpl {
     }
 
     public void createAccountClass(String prefix) {
+        Account x = new Account();
+
+        EntitiesCreateCreateRequest request = new EntitiesCreateCreateRequest()
+                .withName(prefix + PluginConstants.XERO_ENTITY_ACCOUNT)
+                .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
+                .addField(new DataFieldsDTO().withName("AccountID")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("BankAccountNumber")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("Code")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("AddToWatchlist")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("Name")
+                        .withDataType(CosightDataType.STRING)
+                        .withLabel(true))
+                .addField(new DataFieldsDTO().withName("BankAccountType")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("CurrencyCode")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("Description")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("EnablePaymentsToAccount")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("HasAttachments")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("PropertyClass")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("ReportingCode")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("ReportingCodeName")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("ShowInExpenseClaims")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("Status")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("SystemAccount")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("TaxType")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("Type")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("UpdatedDateUTC")
+                        .withDataType(CosightDataType.DATE_TIME))
+                .addIndex("AccountID");
+        EntitiesDTO account = null;
+        try {
+            account = entityServiceWrapper.createEntityStructure(request);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            if (e.getMessage().contains("Duplicated Entity Name")) {
+                System.out.println("Entity already created - assume everything is done for now, return");
+                return;
+                // will have to think about an update mechanism here with versioning etc.
+            } else {
+                e.printStackTrace();
+            }
+        }
+
+        // just one relationship - account to validation errors
+
 
     }
 
@@ -33,7 +95,7 @@ public class EntityManagementServiceImpl {
         entityServiceWrapper.auth();
         relationshipServiceWrapper.auth();
         EntitiesCreateCreateRequest request = new EntitiesCreateCreateRequest()
-                .withName(prefix + "Contact")
+                .withName(prefix + PluginConstants.XERO_ENTITY_CONTACT)
                 .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
                 .addField(new DataFieldsDTO().withName("AccountNumber")
                         .withDataType(CosightDataType.STRING))
@@ -132,7 +194,7 @@ public class EntityManagementServiceImpl {
         //
         // now we need to create the following and link
         // ContactGroup
-        EntitiesCreateCreateRequest contactGroupRequest = new EntitiesCreateCreateRequest().withName(prefix + "ContactGroup")
+        EntitiesCreateCreateRequest contactGroupRequest = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_CONTACT_GROUP)
                 .addField(new DataFieldsDTO().withName("ContactGroupID")
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("Name")
@@ -180,7 +242,7 @@ public class EntityManagementServiceImpl {
 
 
         // Address
-        EntitiesCreateCreateRequest addressRequest = new EntitiesCreateCreateRequest().withName(prefix + "Address")
+        EntitiesCreateCreateRequest addressRequest = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_ADDRESS)
                 .addField(new DataFieldsDTO().withName("AddressLine1")
                         .withDataType(CosightDataType.STRING)
                         .withLabel(true))
@@ -241,7 +303,7 @@ public class EntityManagementServiceImpl {
 
 
         // Attachment
-        EntitiesCreateCreateRequest attachmentRequest = new EntitiesCreateCreateRequest().withName(prefix + "Attachment")
+        EntitiesCreateCreateRequest attachmentRequest = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_ATTACHMENT)
                 .addField(new DataFieldsDTO().withName("AttachmentID")
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("ContentLength")
@@ -306,7 +368,7 @@ public class EntityManagementServiceImpl {
 //        EntitiesDTO balances = entityServiceWrapper.createEntityStructure(balancesRequest);
 
         // BatchPaymentDetails - maybe should be fields of the contact since it isn't a list.
-        EntitiesCreateCreateRequest batchpaymentDetailsRequest = new EntitiesCreateCreateRequest().withName(prefix + "BatchPaymentDetails")
+        EntitiesCreateCreateRequest batchpaymentDetailsRequest = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_BATCH_PAYMENT_DETAILS)
                 .addField(new DataFieldsDTO().withName("BankAccountName")
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("Code")
@@ -355,7 +417,7 @@ public class EntityManagementServiceImpl {
         // BrandingTheme? - nope
 
         // ContactPerson
-        EntitiesCreateCreateRequest contactPersonRequest = new EntitiesCreateCreateRequest().withName(prefix + "ContactPerson")
+        EntitiesCreateCreateRequest contactPersonRequest = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_CONTACT_PERSON)
                 .addField(new DataFieldsDTO().withName("FirstName")
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("EmailAddress")
@@ -400,7 +462,7 @@ public class EntityManagementServiceImpl {
 
 
         // Phone
-        EntitiesCreateCreateRequest phoneRequest = new EntitiesCreateCreateRequest().withName(prefix + "Phone")
+        EntitiesCreateCreateRequest phoneRequest = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_PHONE)
                 .addField(new DataFieldsDTO().withName("PhoneAreaCode")
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("PhoneNumber")
@@ -446,7 +508,7 @@ public class EntityManagementServiceImpl {
 
 
         // SalesTrackingCategory
-        EntitiesCreateCreateRequest salesTrackingCatRequest = new EntitiesCreateCreateRequest().withName(prefix + "SalesTrackingCategory")
+        EntitiesCreateCreateRequest salesTrackingCatRequest = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_SALES_TRACKING_CATEGORY)
                 .addField(new DataFieldsDTO().withName("TrackingOptionName")
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("TrackingCategoryName")
@@ -488,7 +550,7 @@ public class EntityManagementServiceImpl {
 
         // ValidationError
         ValidationError v = new ValidationError();
-        EntitiesCreateCreateRequest validationErrorReq = new EntitiesCreateCreateRequest().withName(prefix + "ValidationError")
+        EntitiesCreateCreateRequest validationErrorReq = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_VALIDATION_ERROR)
                 .addField(new DataFieldsDTO().withName("Message")
                         .withDataType(CosightDataType.STRING).withLabel(true));
         EntitiesDTO validationError = null;

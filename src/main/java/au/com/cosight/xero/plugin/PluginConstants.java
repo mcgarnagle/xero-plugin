@@ -12,6 +12,7 @@ public class PluginConstants {
     public static final String XERO_ENTITY_SALES_TRACKING_CATEGORY = "SalesTrackingCategory";
     public static final String XERO_ENTITY_VALIDATION_ERROR = "ValidationError";
 
+    public static final String XERO_ENTITY_ACCOUNT = "Account";
     //relationships
     public static final String XERO_RELATIONSHIP_CONTACT_TO_CONTACT_GROUP = "ContactToContactGroup";
     public static final String XERO_RELATIONSHIP_CONTACT_TO_ADDRESS = "ContactToAddress";
@@ -21,5 +22,7 @@ public class PluginConstants {
     public static final String XERO_RELATIONSHIP_CONTACT_TO_PHONE = "ContactToPhone";
     public static final String XERO_RELATIONSHIP_CONTACT_TO_SALES_TRACKING_CATEGORY = "ContactToSalesTrackingCategory";
     public static final String XERO_RELATIONSHIP_CONTACT_TO_VALIDATION_ERROR = "ContactToValidationError";
+
+    public static final String XERO_RELATIONSHIP_ACCOUNT_TO_VALIDATION_ERROR = "AccountToValidationError";
 
 }
