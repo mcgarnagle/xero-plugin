@@ -10,6 +10,7 @@ import au.com.cosight.entity.service.dto.EntitiesDTO;
 import au.com.cosight.entity.service.dto.RelationshipsDTO;
 import au.com.cosight.sdk.plugin.runtime.helper.EntityServiceWrapper;
 import au.com.cosight.sdk.plugin.runtime.helper.RelationshipServiceWrapper;
+import au.com.cosight.xero.plugin.PluginConstants;
 import com.xero.models.accounting.ValidationError;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,7 @@ public class EntityManagementServiceImpl {
         entityServiceWrapper.auth();
         relationshipServiceWrapper.auth();
         EntitiesCreateCreateRequest request = new EntitiesCreateCreateRequest()
-                .withName(prefix + "contacts")
+                .withName(prefix + "Contact")
                 .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
                 .addField(new DataFieldsDTO().withName("AccountNumber")
                         .withDataType(CosightDataType.STRING))
@@ -123,6 +124,8 @@ public class EntityManagementServiceImpl {
                 e.printStackTrace();
             }
         }
+
+        //
         // now we need to create the following and link
         // ContactGroup
         EntitiesCreateCreateRequest contactGroupRequest = new EntitiesCreateCreateRequest().withName(prefix + "ContactGroup")
@@ -153,7 +156,7 @@ public class EntityManagementServiceImpl {
 
 
         RelationshipsCreateCreateRequest contactToContactGroup =
-                new RelationshipsCreateCreateRequest().withName("ContactToContactGroup")
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CONTACT_TO_CONTACT_GROUP)
                         .withFromEntityId(contact.getId())
                         .withToEntityId(contactGroup.getId())
                         .withDescription("Link between Contact and Contact Group");
@@ -197,7 +200,8 @@ public class EntityManagementServiceImpl {
                 .addField(new DataFieldsDTO().withName("PostalCode")
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("Region")
-                        .withDataType(CosightDataType.STRING));
+                        .withDataType(CosightDataType.STRING))
+                .addIndex("AddressLine1").addIndex("PostalCode");
         EntitiesDTO address = null;
         try {
             address = entityServiceWrapper.createEntityStructure(addressRequest);
@@ -213,7 +217,7 @@ public class EntityManagementServiceImpl {
 
 
         RelationshipsCreateCreateRequest contactToAddress =
-                new RelationshipsCreateCreateRequest().withName("ContactToAddress")
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CONTACT_TO_ADDRESS)
                         .withFromEntityId(contact.getId())
                         .withToEntityId(address.getId())
                         .withDescription("Link between Contact and Address");
@@ -264,7 +268,7 @@ public class EntityManagementServiceImpl {
 
 
         RelationshipsCreateCreateRequest contactToAttachment =
-                new RelationshipsCreateCreateRequest().withName("ContactToAttachment")
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CONTACT_TO_ATTACHMENT)
                         .withFromEntityId(contact.getId())
                         .withToEntityId(attachment.getId())
                         .withDescription("Link between Contact and Contact Group");
@@ -325,7 +329,7 @@ public class EntityManagementServiceImpl {
         }
 
         RelationshipsCreateCreateRequest contactTobatchPaymentDetails =
-                new RelationshipsCreateCreateRequest().withName("ContactToBatchPaymentDetails")
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CONTACT_TO_BATCH_PAYMENT_DETAILS)
                         .withFromEntityId(contact.getId())
                         .withToEntityId(batchPaymentDetails.getId())
                         .withDescription("Link between Contact and Contact Group");
@@ -372,7 +376,7 @@ public class EntityManagementServiceImpl {
 
 
         RelationshipsCreateCreateRequest contactTocontactPerson =
-                new RelationshipsCreateCreateRequest().withName("ContactToContactPerson")
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CONTACT_TO_CONTACT_PERSON)
                         .withFromEntityId(contact.getId())
                         .withToEntityId(contactPerson.getId())
                         .withDescription("Link between Contact and Contact Group");
@@ -400,7 +404,9 @@ public class EntityManagementServiceImpl {
                 .addField(new DataFieldsDTO().withName("PhoneCountryCode")
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("PhoneType")
-                        .withDataType(CosightDataType.STRING));
+                        .withDataType(CosightDataType.STRING))
+                .addIndex("PhoneNumber").addIndex("PhoneAreaCode");
+
         EntitiesDTO phone = null;
         try {
             phone = entityServiceWrapper.createEntityStructure(phoneRequest);
@@ -416,7 +422,7 @@ public class EntityManagementServiceImpl {
 
 
         RelationshipsCreateCreateRequest contactTophone =
-                new RelationshipsCreateCreateRequest().withName("ContactToPhone")
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CONTACT_TO_PHONE)
                         .withFromEntityId(contact.getId())
                         .withToEntityId(phone.getId())
                         .withDescription("Link between Contact and Contact Group");
@@ -457,7 +463,7 @@ public class EntityManagementServiceImpl {
 
 
         RelationshipsCreateCreateRequest contactTosalesTrackingCategory =
-                new RelationshipsCreateCreateRequest().withName("ContactToSalesTrackingCategory")
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CONTACT_TO_SALES_TRACKING_CATEGORY)
                         .withFromEntityId(contact.getId())
                         .withToEntityId(salesTrackingCategory.getId())
                         .withDescription("Link between Contact and Contact Group");
@@ -496,7 +502,7 @@ public class EntityManagementServiceImpl {
 
 
         RelationshipsCreateCreateRequest contactTovalidationError =
-                new RelationshipsCreateCreateRequest().withName("ContactToValidationError")
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CONTACT_TO_VALIDATION_ERROR)
                         .withFromEntityId(contact.getId())
                         .withToEntityId(validationError.getId())
                         .withDescription("Link between Contact and Contact Group");

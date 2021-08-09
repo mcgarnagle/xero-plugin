@@ -6,6 +6,7 @@ import au.com.cosight.sdk.plugin.runtime.CosightExecutionContext;
 import au.com.cosight.sdk.plugin.runtime.CosightRuntimeFieldMap;
 import au.com.cosight.xero.plugin.service.EntityManagementServiceImpl;
 import au.com.cosight.xero.plugin.service.ForexQuoteService;
+import au.com.cosight.xero.plugin.service.xero.ContactService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xero.api.ApiClient;
 import com.xero.api.client.AccountingApi;
@@ -20,7 +21,7 @@ import java.util.List;
 
 @Configuration
 public class InitAppService implements CommandLineRunner {
-    private static Logger logger = LoggerFactory.getLogger("forex-plugin");
+    private static Logger logger = LoggerFactory.getLogger("xero-plugin");
 
     // will have a parameter for 'classPrefix' that will be used to prefix classes
 
@@ -29,27 +30,30 @@ public class InitAppService implements CommandLineRunner {
     private final ForexQuoteService forexQuoteService;
     private final ObjectMapper objectMapper;
     private final EntityManagementServiceImpl entityManagementService;
+    private final ContactService contactService;
 
-    public InitAppService(CosightExecutionContext cosightExecutionContext, ForexQuoteService forexQuoteService, ObjectMapper objectMapper, EntityManagementServiceImpl entityManagementService) {
+
+    public InitAppService(CosightExecutionContext cosightExecutionContext, ForexQuoteService forexQuoteService, ObjectMapper objectMapper, EntityManagementServiceImpl entityManagementService, ContactService contactService) {
         this.cosightExecutionContext = cosightExecutionContext;
         this.forexQuoteService = forexQuoteService;
         this.objectMapper = objectMapper;
         this.entityManagementService = entityManagementService;
+        this.contactService = contactService;
     }
 
     @Override
     public void run(String... args) throws Exception {
         logger.info("================================== START PROCESS ========================================");
-
         long ts = System.currentTimeMillis();
         if (args.length == 0) {
             throw new IllegalStateException("Unknown Entry point, no entry point provided");
         }
         ExternalOAuth2Credentials deets = ExternalOAuth2Credentials.getInstance();
-        String classPrefix = (String) cosightExecutionContext.getParameters().get("classPrefix");
-        logger.info("================================== USING CLASS PREFIX {} ========================================", classPrefix);
-        logger.info("context has values {} {}", cosightExecutionContext.getRuntimeInfo().getPluginName(), cosightExecutionContext.getRuntimeInfo().getPluginUuid());
-        logger.info("context {}", cosightExecutionContext.toString());
+        // lets not worry about classprefix for now
+//        String classPrefix = (String) cosightExecutionContext.getParameters().get("classPrefix");
+//        logger.info("================================== USING CLASS PREFIX {} ========================================", classPrefix);
+//        logger.info("context has values {} {}", cosightExecutionContext.getRuntimeInfo().getPluginName(), cosightExecutionContext.getRuntimeInfo().getPluginUuid());
+//        logger.info("context {}", cosightExecutionContext.toString());
         logger.info("================================== FETCHING OAUTH2 DETAILS ========================================");
         String accessToken = deets.getToken().getAccessToken();
 
@@ -85,6 +89,8 @@ public class InitAppService implements CommandLineRunner {
 
                 contacts.getContacts().forEach(contact -> {
                     logger.info("Contact details {}",contact.toString());
+                    contactService.upsertContact(contact);
+
                 });
 
             } catch (Exception e) {
@@ -212,45 +218,7 @@ public class InitAppService implements CommandLineRunner {
     }
 
     private void buildContactsEntity() {
-        entityManagementService.createContactClass("xero_");
+        entityManagementService.createContactClass("");
     }
 
-    public void run2(String... args) throws Exception {
-        logger.info("================================== START PROCESS ========================================");
-        long ts = System.currentTimeMillis();
-        if (args.length == 0) {
-            throw new IllegalStateException("Unknown Entry point, no entry point provided");
-        }
-        if (cosightExecutionContext.getAllMapEntities() == null || cosightExecutionContext.getAllMapEntities().size() != 1) {
-            throw new IllegalStateException("No Field Mapping Provided");
-        }
-        final CosightRuntimeFieldMap fieldMap = cosightExecutionContext.getMapping(0);
-        if (!"currencyQuote".equals(args[0])) {
-            throw new IllegalStateException("Invalid action present");
-        }
-        logger.info("RUNTIME CONTEXT: {}", objectMapper.writeValueAsString(cosightExecutionContext));
-
-        final List<String> currencyCodes = new ArrayList<>();
-        //support both batch process . if you define as for-each then no need to support batch
-        if (cosightExecutionContext.isBatchProcess()) {
-            // if batch process , use cosightExecutionContext.getParametersBatch();
-            logger.info("BATCH PROCESSING , BATCH SIZE {}", cosightExecutionContext.getParametersBatch().size());
-            cosightExecutionContext.getParametersBatch().forEach(m -> {
-                logger.info("{}", m);
-                currencyCodes.addAll((List<String>) m.get("currencyCodes"));
-            });
-        } else {
-            // non batch process / run through 'run radial button' cosightExecutionContext.getParameters()
-            currencyCodes.addAll((List<String>) cosightExecutionContext.getParameters().get("currencyCodes"));
-        }
-        logger.info("processing {}", currencyCodes);
-        if (currencyCodes == null) {
-            throw new IllegalStateException("missing currency code");
-        }
-        if ("currencyQuote".equals(args[0])) {
-            List<EntityInstance> instances = forexQuoteService.updateQuote(fieldMap, currencyCodes);
-            logger.info("INSERTED/UPDATED {}", instances.size());
-        }
-        logger.info("==================== PROCESS COMPLETED took {} ms.===================", (System.currentTimeMillis() - ts));
-    }
 }
