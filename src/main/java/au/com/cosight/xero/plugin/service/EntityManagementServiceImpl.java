@@ -25,6 +25,10 @@ public class EntityManagementServiceImpl {
         this.relationshipServiceWrapper = relationshipServiceWrapper;
     }
 
+    public void createAccountClass(String prefix) {
+
+    }
+
     public void createContactClass(String prefix) {
         entityServiceWrapper.auth();
         relationshipServiceWrapper.auth();
