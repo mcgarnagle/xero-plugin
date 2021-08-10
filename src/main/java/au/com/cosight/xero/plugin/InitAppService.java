@@ -1,9 +1,7 @@
 package au.com.cosight.xero.plugin;
 
-import au.com.cosight.entity.domain.EntityInstance;
 import au.com.cosight.sdk.auth.external.oauth.ExternalOAuth2Credentials;
 import au.com.cosight.sdk.plugin.runtime.CosightExecutionContext;
-import au.com.cosight.sdk.plugin.runtime.CosightRuntimeFieldMap;
 import au.com.cosight.xero.plugin.service.EntityManagementServiceImpl;
 import au.com.cosight.xero.plugin.service.ForexQuoteService;
 import au.com.cosight.xero.plugin.service.xero.ContactService;
@@ -17,7 +15,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
-import java.util.List;
 
 @Configuration
 public class InitAppService implements CommandLineRunner {
@@ -73,12 +70,16 @@ public class InitAppService implements CommandLineRunner {
         // now lets process the action
         if ("getContacts".equalsIgnoreCase(args[0])) {
             logger.info("================== FETCHING ACCOUNTS.CONTACTS FROM XERO =====================");
-            if (args.length != 2) {
+            if (args.length != 1) {
 
-                logger.error("Need to provide the action and the tenant-id for xero for this method");
+                logger.error("Need to provide the action for xero for this method");
                 throw new IllegalStateException("Need to provide the action and the tenant-id for xero for this method");
             }
-            String xeroTenantId = args[1];
+            cosightExecutionContext.getParameters().forEach((s, o) -> {
+                logger.info("Parameter name {} = {}", s, o);
+            });
+            ArrayList tenId = (ArrayList) cosightExecutionContext.getParameters().get("Organisation ID");
+            String xeroTenantId = (String) tenId.get(0);
             logger.info("================== FETCHING ACCOUNTS.CONTACTS FROM XERO USING TENANT-ID {} =====================", xeroTenantId);
 
             // XERO API CALLS - we'll move this to a service later
@@ -88,7 +89,7 @@ public class InitAppService implements CommandLineRunner {
                 Contacts contacts = accountingApi.getContacts(accessToken, xeroTenantId, null, null, null, null, null, null, null);
 
                 contacts.getContacts().forEach(contact -> {
-                    logger.info("Contact details {}",contact.toString());
+                    logger.info("Contact details {}", contact.getContactID());
                     contactService.upsertContact(contact);
 
                 });
@@ -211,6 +212,9 @@ public class InitAppService implements CommandLineRunner {
 
 
         }
+
+        logger.info("================================== Finished! ========================================");
+
     }
 
     private boolean checkContactsEntityExists() {
