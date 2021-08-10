@@ -1,7 +1,6 @@
 {
   "parameters": {
-    "classPrefix": "DEMO_XERO_",
-    "currencyCodes": ["USDAUD", "USDCAD", "USDLKR"]
+    "Organisation ID": ["a64d1706-9c63-4066-8084-056514fbd104"]
   },
   "action": {
     "name": "currencyQuote",
