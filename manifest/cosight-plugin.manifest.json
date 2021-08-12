@@ -5,11 +5,11 @@
   "availability": "global",
   "oauth2": {
     "type": "AUTHORISATION_CODE",
-      "clientId": "",
-      "clientSecret": "",
-      "authorisationUrl": "",
-      "tokenUrl": "",
-      "refreshUrl": ""
+    "clientId": "",
+    "clientSecret": "",
+    "authorisationUrl": "",
+    "tokenUrl": "",
+    "refreshUrl": ""
   },
   "secrets": [
     {

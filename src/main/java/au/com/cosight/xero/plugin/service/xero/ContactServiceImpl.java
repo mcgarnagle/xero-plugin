@@ -8,6 +8,8 @@ import au.com.cosight.sdk.plugin.runtime.helper.RelationshipServiceWrapper;
 import au.com.cosight.xero.plugin.PluginConstants;
 import au.com.cosight.xero.plugin.mapper.ContactMapper;
 import com.xero.models.accounting.Contact;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +20,7 @@ public class ContactServiceImpl implements ContactService {
     private RelationshipServiceWrapper relationshipServiceWrapper;
     private EntityServiceWrapper entityServiceWrapper;
     private CosightExecutionContext cosightExecutionContext;
+    private static Logger logger = LoggerFactory.getLogger("xero-plugin:contactServiceImpl");
 
     public ContactServiceImpl(RelationshipServiceWrapper relationshipServiceWrapper, EntityServiceWrapper entityServiceWrapper, CosightExecutionContext cosightExecutionContext) {
         this.relationshipServiceWrapper = relationshipServiceWrapper;
@@ -37,16 +40,14 @@ public class ContactServiceImpl implements ContactService {
         contactInstance = entityServiceWrapper.save(contactInstance);
         // Now that we have saved the contact, lets remove it from the array and sort through the rest.
         EntityInstance finalContactInstance = contactInstance;
-        System.out.println("mappedINsta is before" +mappedInstance.size() );
         mappedInstance.removeIf(x -> x.get_label().equalsIgnoreCase(PluginConstants.XERO_ENTITY_CONTACT));
-        System.out.println("mappedINsta is now" +mappedInstance.size() );
         mappedInstance.forEach(entityInstance -> {
-            // basic strategy - save and link. set link to not dupliate. rely on
+            // basic strategy - save and link. set link to not duplicate. rely on
             // unique indexes to not duplicate entities
             EntityInstance newInstance = entityServiceWrapper.save(entityInstance);
             RelationshipsDTO relo = new RelationshipsDTO();
-            relo.setFromEntityId(finalContactInstance.getId());
-            relo.setToEntityId(newInstance.getId());
+            relo.setFromEntityId(finalContactInstance.getId().replaceAll("#",""));
+            relo.setToEntityId(newInstance.getId().replaceAll("#",""));
             relo.setAllowDuplicate(false);
             if (entityInstance.get_label().equalsIgnoreCase(PluginConstants.XERO_ENTITY_ADDRESS)) {
                 relo.setName(PluginConstants.XERO_RELATIONSHIP_CONTACT_TO_ADDRESS);
@@ -73,6 +74,7 @@ public class ContactServiceImpl implements ContactService {
             if (entityInstance.get_label().equalsIgnoreCase(PluginConstants.XERO_ENTITY_VALIDATION_ERROR)) {
                 relo.setName(PluginConstants.XERO_RELATIONSHIP_CONTACT_TO_VALIDATION_ERROR);
             }
+            logger.info("saving relationship {}", relo.toString());
             relationshipServiceWrapper.saveRelationshipInstance(relo);
 
         });

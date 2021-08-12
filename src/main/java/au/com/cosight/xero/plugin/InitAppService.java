@@ -1,5 +1,6 @@
 package au.com.cosight.xero.plugin;
 
+import au.com.cosight.sdk.auth.CredentialProvider;
 import au.com.cosight.sdk.auth.external.oauth.ExternalOAuth2Credentials;
 import au.com.cosight.sdk.plugin.runtime.CosightExecutionContext;
 import au.com.cosight.xero.plugin.service.EntityManagementServiceImpl;
@@ -8,6 +9,7 @@ import au.com.cosight.xero.plugin.service.xero.ContactService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xero.api.ApiClient;
 import com.xero.api.client.AccountingApi;
+import com.xero.models.accounting.Accounts;
 import com.xero.models.accounting.Contacts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,17 +47,21 @@ public class InitAppService implements CommandLineRunner {
         if (args.length == 0) {
             throw new IllegalStateException("Unknown Entry point, no entry point provided");
         }
-        ExternalOAuth2Credentials deets = ExternalOAuth2Credentials.getInstance();
+
+        logger.info("============= runtime info ================");
+        logger.info(" runtime.database -> {}",cosightExecutionContext.getRuntimeInfo().getDatabase());
+        logger.info(" orgId -> {}",cosightExecutionContext.getRuntimeInfo().getOrgId());
+        logger.info(" OrgName -> {}",cosightExecutionContext.getRuntimeInfo().getOrgName());
+        logger.info(" PluginName -> {}",cosightExecutionContext.getRuntimeInfo().getPluginName());
+        logger.info(" PluginUUID -> {}",cosightExecutionContext.getRuntimeInfo().getPluginUuid());
+        logger.info(" User -> {}",cosightExecutionContext.getRuntimeInfo().getUser());
+        logger.info("============= END runtime info ================");
+
         // lets not worry about classprefix for now
 //        String classPrefix = (String) cosightExecutionContext.getParameters().get("classPrefix");
 //        logger.info("================================== USING CLASS PREFIX {} ========================================", classPrefix);
 //        logger.info("context has values {} {}", cosightExecutionContext.getRuntimeInfo().getPluginName(), cosightExecutionContext.getRuntimeInfo().getPluginUuid());
 //        logger.info("context {}", cosightExecutionContext.toString());
-        logger.info("================================== FETCHING OAUTH2 DETAILS ========================================");
-        String accessToken = deets.getToken().getAccessToken();
-
-        logger.info("ACCESS TOKEN =" + accessToken);
-        logger.info("================================== FETCHING OAUTH2 DETAILS SUCCESS ========================================");
 
         // in here we may also build a config entity so that we can check on the state of the entities and see if they
         // need updating etc....
@@ -64,8 +70,15 @@ public class InitAppService implements CommandLineRunner {
         logger.info("================================== CHECKING IF CONTACTS BUILT ========================================");
         // we'll put check in here later. need to update SDK
         buildContactsEntity();
-
         logger.info("================================== CHECKING IF CONTACTS BUILT SUCCESS ========================================");
+        ArrayList tenId = (ArrayList) cosightExecutionContext.getParameters().get("Organisation ID");
+        String xeroTenantId = (String) tenId.get(0);
+        logger.info("================================== FETCHING OAUTH2 DETAILS ========================================");
+        ExternalOAuth2Credentials deets = ExternalOAuth2Credentials.getInstance();
+        String accessToken = deets.getToken().getAccessToken();
+
+        logger.info("ACCESS TOKEN =" + accessToken);
+        logger.info("================================== FETCHING OAUTH2 DETAILS SUCCESS ========================================");
 
         // now lets process the action
         if ("getContacts".equalsIgnoreCase(args[0])) {
@@ -78,8 +91,6 @@ public class InitAppService implements CommandLineRunner {
             cosightExecutionContext.getParameters().forEach((s, o) -> {
                 logger.info("Parameter name {} = {}", s, o);
             });
-            ArrayList tenId = (ArrayList) cosightExecutionContext.getParameters().get("Organisation ID");
-            String xeroTenantId = (String) tenId.get(0);
             logger.info("================== FETCHING ACCOUNTS.CONTACTS FROM XERO USING TENANT-ID {} =====================", xeroTenantId);
 
             // XERO API CALLS - we'll move this to a service later
@@ -91,7 +102,6 @@ public class InitAppService implements CommandLineRunner {
                 contacts.getContacts().forEach(contact -> {
                     logger.info("Contact details {}", contact.getContactID());
                     contactService.upsertContact(contact);
-
                 });
 
             } catch (Exception e) {
@@ -100,8 +110,21 @@ public class InitAppService implements CommandLineRunner {
             }
 
         }
-        if ("accounts.getAccounts".equalsIgnoreCase(args[0])) {
+        if ("getAccounts".equalsIgnoreCase(args[0])) {
 
+            ApiClient defaultClient = new ApiClient();
+            AccountingApi accountingApi = AccountingApi.getInstance(defaultClient);
+            try {
+                Accounts accounts = accountingApi.getAccounts(accessToken, xeroTenantId, null, null, null);
+
+                accounts.getAccounts().forEach(account -> {
+
+                });
+
+            } catch (Exception e) {
+                logger.error("error getting Accounts {}", e.getMessage());
+                e.printStackTrace();
+            }
 
         }
         if ("accounts.getBankTransactions".equalsIgnoreCase(args[0])) {

@@ -26,6 +26,40 @@ public class EntityManagementServiceImpl {
         this.entityServiceWrapper = entityServiceWrapper;
         this.relationshipServiceWrapper = relationshipServiceWrapper;
     }
+    private EntitiesDTO createEntity(EntitiesCreateCreateRequest request) {
+        EntitiesDTO theObject = null;
+        try {
+            theObject = entityServiceWrapper.createEntityStructure(request);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            if (e.getMessage().contains("Duplicated Entity Name")) {
+                System.out.println("Entity already created - assume everything is done for now, return");
+                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(request.getName());
+                theObject = dto.getEnitiy();
+            } else {
+                e.printStackTrace();
+            }
+        }
+
+        return theObject;
+
+    }
+    private RelationshipsDTO createRelationship(RelationshipsCreateCreateRequest request) {
+        RelationshipsDTO relo = null;
+        try {
+            relo = relationshipServiceWrapper.createRelationship(request);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            if (e.getMessage().contains("Duplicated RelationshipName")) {
+                System.out.println("Relationship already created - continue");
+                // will have to think about an update mechanism here with versioning etc.
+            } else {
+                e.printStackTrace();
+            }
+        }
+        return relo;
+
+    }
 
     public void createAccountClass(String prefix) {
         Account x = new Account();
@@ -74,21 +108,29 @@ public class EntityManagementServiceImpl {
                 .addField(new DataFieldsDTO().withName("UpdatedDateUTC")
                         .withDataType(CosightDataType.DATE_TIME))
                 .addIndex("AccountID");
-        EntitiesDTO account = null;
+        EntitiesDTO account = createEntity(request);
+        EntitiesDTO validationErr = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_VALIDATION_ERROR).getEnitiy();
+
+        // just one relationship - account to validation errors
+        // we have to get class
+        RelationshipsCreateCreateRequest contactToAddress =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_ACCOUNT_TO_VALIDATION_ERROR)
+                        .withFromEntityId(account.getId())
+                        .withToEntityId(validationErr.getId())
+                        .withDescription("Link between Contact and Address");
+
+        RelationshipsDTO contactToAddressResult = null;
         try {
-            account = entityServiceWrapper.createEntityStructure(request);
+            contactToAddressResult = relationshipServiceWrapper.createRelationship(contactToAddress);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - assume everything is done for now, return");
-                return;
+                System.out.println("Entity already created - continue");
                 // will have to think about an update mechanism here with versioning etc.
             } else {
                 e.printStackTrace();
             }
         }
-
-        // just one relationship - account to validation errors
 
 
     }
@@ -190,7 +232,7 @@ public class EntityManagementServiceImpl {
                 ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_CONTACT);
                 contact = dto.getEnitiy();
                 //
-//                return;
+                return;
                 // will have to think about an update mechanism here with versioning etc.
             } else {
                 e.printStackTrace();
@@ -221,6 +263,9 @@ public class EntityManagementServiceImpl {
             System.out.println(e.getMessage());
             if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
+                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_CONTACT_GROUP);
+                contactGroup = dto.getEnitiy();
+
                 // will have to think about an update mechanism here with versioning etc.
             } else {
                 e.printStackTrace();
@@ -275,7 +320,7 @@ public class EntityManagementServiceImpl {
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("Region")
                         .withDataType(CosightDataType.STRING))
-                .addIndex("AddressLine1").addIndex("PostalCode");
+                .addIndex("AddressLine1");
         EntitiesDTO address = null;
         try {
             address = entityServiceWrapper.createEntityStructure(addressRequest);
@@ -283,6 +328,9 @@ public class EntityManagementServiceImpl {
             System.out.println(e.getMessage());
             if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
+                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_ADDRESS);
+                address = dto.getEnitiy();
+
                 // will have to think about an update mechanism here with versioning etc.
             } else {
                 e.printStackTrace();
@@ -335,6 +383,9 @@ public class EntityManagementServiceImpl {
             System.out.println(e.getMessage());
             if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
+                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_ATTACHMENT);
+                attachment = dto.getEnitiy();
+
                 // will have to think about an update mechanism here with versioning etc.
             } else {
                 e.printStackTrace();
@@ -398,6 +449,9 @@ public class EntityManagementServiceImpl {
             System.out.println(e.getMessage());
             if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
+                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_BATCH_PAYMENT_DETAILS);
+                batchPaymentDetails = dto.getEnitiy();
+
                 // will have to think about an update mechanism here with versioning etc.
             } else {
                 e.printStackTrace();
@@ -445,6 +499,9 @@ public class EntityManagementServiceImpl {
             System.out.println(e.getMessage());
             if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
+                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_CONTACT_PERSON);
+                contactPerson = dto.getEnitiy();
+
                 // will have to think about an update mechanism here with versioning etc.
             } else {
                 e.printStackTrace();
@@ -492,6 +549,9 @@ public class EntityManagementServiceImpl {
             System.out.println(e.getMessage());
             if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
+                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_PHONE);
+                phone = dto.getEnitiy();
+
                 // will have to think about an update mechanism here with versioning etc.
             } else {
                 e.printStackTrace();
@@ -534,6 +594,9 @@ public class EntityManagementServiceImpl {
             System.out.println(e.getMessage());
             if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
+                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_SALES_TRACKING_CATEGORY);
+                salesTrackingCategory = dto.getEnitiy();
+
                 // will have to think about an update mechanism here with versioning etc.
             } else {
                 e.printStackTrace();
@@ -574,6 +637,9 @@ public class EntityManagementServiceImpl {
             System.out.println(e.getMessage());
             if (e.getMessage().contains("Duplicated Entity Name")) {
                 System.out.println("Entity already created - continue");
+                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_VALIDATION_ERROR);
+                validationError = dto.getEnitiy();
+
                 // will have to think about an update mechanism here with versioning etc.
             } else {
                 e.printStackTrace();
