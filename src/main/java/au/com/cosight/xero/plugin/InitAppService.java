@@ -1,10 +1,10 @@
 package au.com.cosight.xero.plugin;
 
-import au.com.cosight.sdk.auth.CredentialProvider;
 import au.com.cosight.sdk.auth.external.oauth.ExternalOAuth2Credentials;
 import au.com.cosight.sdk.plugin.runtime.CosightExecutionContext;
 import au.com.cosight.xero.plugin.service.EntityManagementServiceImpl;
 import au.com.cosight.xero.plugin.service.ForexQuoteService;
+import au.com.cosight.xero.plugin.service.xero.AccountService;
 import au.com.cosight.xero.plugin.service.xero.ContactService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xero.api.ApiClient;
@@ -30,14 +30,16 @@ public class InitAppService implements CommandLineRunner {
     private final ObjectMapper objectMapper;
     private final EntityManagementServiceImpl entityManagementService;
     private final ContactService contactService;
+    private final AccountService accountService;
 
 
-    public InitAppService(CosightExecutionContext cosightExecutionContext, ForexQuoteService forexQuoteService, ObjectMapper objectMapper, EntityManagementServiceImpl entityManagementService, ContactService contactService) {
+    public InitAppService(CosightExecutionContext cosightExecutionContext, ForexQuoteService forexQuoteService, ObjectMapper objectMapper, EntityManagementServiceImpl entityManagementService, ContactService contactService, AccountService accountService) {
         this.cosightExecutionContext = cosightExecutionContext;
         this.forexQuoteService = forexQuoteService;
         this.objectMapper = objectMapper;
         this.entityManagementService = entityManagementService;
         this.contactService = contactService;
+        this.accountService = accountService;
     }
 
     @Override
@@ -49,12 +51,12 @@ public class InitAppService implements CommandLineRunner {
         }
 
         logger.info("============= runtime info ================");
-        logger.info(" runtime.database -> {}",cosightExecutionContext.getRuntimeInfo().getDatabase());
-        logger.info(" orgId -> {}",cosightExecutionContext.getRuntimeInfo().getOrgId());
-        logger.info(" OrgName -> {}",cosightExecutionContext.getRuntimeInfo().getOrgName());
-        logger.info(" PluginName -> {}",cosightExecutionContext.getRuntimeInfo().getPluginName());
-        logger.info(" PluginUUID -> {}",cosightExecutionContext.getRuntimeInfo().getPluginUuid());
-        logger.info(" User -> {}",cosightExecutionContext.getRuntimeInfo().getUser());
+        logger.info(" runtime.database -> {}", cosightExecutionContext.getRuntimeInfo().getDatabase());
+        logger.info(" orgId -> {}", cosightExecutionContext.getRuntimeInfo().getOrgId());
+        logger.info(" OrgName -> {}", cosightExecutionContext.getRuntimeInfo().getOrgName());
+        logger.info(" PluginName -> {}", cosightExecutionContext.getRuntimeInfo().getPluginName());
+        logger.info(" PluginUUID -> {}", cosightExecutionContext.getRuntimeInfo().getPluginUuid());
+        logger.info(" User -> {}", cosightExecutionContext.getRuntimeInfo().getUser());
         logger.info("============= END runtime info ================");
 
         // lets not worry about classprefix for now
@@ -69,7 +71,8 @@ public class InitAppService implements CommandLineRunner {
         // build contacts
         logger.info("================================== CHECKING IF CONTACTS BUILT ========================================");
         // we'll put check in here later. need to update SDK
-        buildContactsEntity();
+//        buildContactsEntity();
+        buildAccountsEntity();
         logger.info("================================== CHECKING IF CONTACTS BUILT SUCCESS ========================================");
         ArrayList tenId = (ArrayList) cosightExecutionContext.getParameters().get("Organisation ID");
         String xeroTenantId = (String) tenId.get(0);
@@ -118,7 +121,7 @@ public class InitAppService implements CommandLineRunner {
                 Accounts accounts = accountingApi.getAccounts(accessToken, xeroTenantId, null, null, null);
 
                 accounts.getAccounts().forEach(account -> {
-
+                    accountService.upsertAccount(account);
                 });
 
             } catch (Exception e) {
@@ -246,6 +249,10 @@ public class InitAppService implements CommandLineRunner {
 
     private void buildContactsEntity() {
         entityManagementService.createContactClass("");
+    }
+
+    private void buildAccountsEntity() {
+        entityManagementService.createAccountClass("");
     }
 
 }

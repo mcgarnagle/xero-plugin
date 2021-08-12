@@ -3,7 +3,7 @@
   "clientId": "28026EA9E21A4F5495426035B83AFA9F",
   "clientSecret": "8DkvXnzlLfPZhFOz-PC193LH5f_DxEml8Nk1POlFda9HVwQC",
   "authorisationUrl": "https://login.xero.com/identity/connect/authorize",
-  "scope": "openid profile email accounting.transactions accounting.contacts offline_access",
+  "scope": "openid profile email accounting.transactions accounting.contacts accounting.accounts offline_access",
   "tokenUrl": "https://identity.xero.com/connect/token",
   "refreshUrl": ""
 }
