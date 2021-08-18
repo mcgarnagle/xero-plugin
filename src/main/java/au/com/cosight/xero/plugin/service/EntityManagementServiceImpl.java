@@ -13,8 +13,9 @@ import au.com.cosight.sdk.plugin.runtime.helper.EntityServiceWrapper;
 import au.com.cosight.sdk.plugin.runtime.helper.RelationshipServiceWrapper;
 import au.com.cosight.xero.plugin.PluginConstants;
 import com.xero.models.accounting.Account;
-import com.xero.models.accounting.ValidationError;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class EntityManagementServiceImpl {
@@ -26,7 +27,8 @@ public class EntityManagementServiceImpl {
         this.entityServiceWrapper = entityServiceWrapper;
         this.relationshipServiceWrapper = relationshipServiceWrapper;
     }
-    private EntitiesDTO createEntity(EntitiesCreateCreateRequest request) {
+
+    private Optional<EntitiesDTO> createEntity(EntitiesCreateCreateRequest request) {
         EntitiesDTO theObject = null;
         try {
             theObject = entityServiceWrapper.createEntityStructure(request);
@@ -37,14 +39,14 @@ public class EntityManagementServiceImpl {
                 ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(request.getName());
                 theObject = dto.getEnitiy();
             } else {
-                e.printStackTrace();
+                return Optional.empty();
             }
         }
-
-        return theObject;
+        return Optional.ofNullable(theObject);
 
     }
-    private RelationshipsDTO createRelationship(RelationshipsCreateCreateRequest request) {
+
+    private Optional<RelationshipsDTO> createRelationship(RelationshipsCreateCreateRequest request) {
         RelationshipsDTO relo = null;
         try {
             relo = relationshipServiceWrapper.createRelationship(request);
@@ -52,12 +54,14 @@ public class EntityManagementServiceImpl {
             System.out.println(e.getMessage());
             if (e.getMessage().contains("Duplicated RelationshipName")) {
                 System.out.println("Relationship already created - continue");
+
                 // will have to think about an update mechanism here with versioning etc.
             } else {
                 e.printStackTrace();
+                return Optional.empty();
             }
         }
-        return relo;
+        return Optional.of(relo);
 
     }
 
@@ -108,7 +112,9 @@ public class EntityManagementServiceImpl {
                 .addField(new DataFieldsDTO().withName("UpdatedDateUTC")
                         .withDataType(CosightDataType.DATE_TIME))
                 .addIndex("AccountID");
-        EntitiesDTO account = createEntity(request);
+
+        EntitiesDTO account = createEntity(request).orElseThrow(IllegalStateException::new);
+
         EntitiesDTO validationErr = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_VALIDATION_ERROR).getEnitiy();
 
         // just one relationship - account to validation errors
@@ -119,18 +125,154 @@ public class EntityManagementServiceImpl {
                         .withToEntityId(validationErr.getId())
                         .withDescription("Link between Contact and Address");
 
-        RelationshipsDTO contactToAddressResult = null;
-        try {
-            contactToAddressResult = relationshipServiceWrapper.createRelationship(contactToAddress);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
+           createRelationship(contactToAddress);
+
+    }
+
+
+    public void createBankTransactionClass(String prefix) {
+        entityServiceWrapper.auth();
+        relationshipServiceWrapper.auth();
+        EntitiesCreateCreateRequest bankTransactionRequest = new EntitiesCreateCreateRequest()
+                .withProjectId("0")
+                .withName(prefix + PluginConstants.XERO_ENTITY_BANK_TRANSACTION)
+                .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
+                .addField(new DataFieldsDTO().withName("BankTransactionId")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("Type")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("CurrencyCode")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("CurrencyRate")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Date")
+                        .withDataType(CosightDataType.DATE_TIME))
+                .addField(new DataFieldsDTO().withName("HasAttachments")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("IsReconciled")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("LineAmountTypes")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("OverpaymentId")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("PrepaymentId")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("Reference")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("Status")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("Subtotal")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Total")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("TotalTax")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("UpdatedDateUTC")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("Url")
+                        .withDataType(CosightDataType.STRING));
+
+        EntitiesDTO bankTransactionEntity = createEntity(bankTransactionRequest).orElseThrow(IllegalStateException::new);
+
+        EntitiesDTO validationErrEntity = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_VALIDATION_ERROR).getEnitiy();
+        EntitiesDTO accountEntity = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_ACCOUNT).getEnitiy();
+        EntitiesDTO contactEntity = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_CONTACT).getEnitiy();
+
+        RelationshipsCreateCreateRequest bankTransactionToValidationError =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_BANK_TRANSACTION_TO_VALIDATION_ERROR)
+                        .withFromEntityId(bankTransactionEntity.getId())
+                        .withToEntityId(validationErrEntity.getId())
+                        .withDescription("Link between BankTransaction and Validation Error");
+
+        createRelationship(bankTransactionToValidationError);
+
+        RelationshipsCreateCreateRequest bankTransactionToAccountRequest =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_BANK_TRANSACTION_TO_ACCOUNT)
+                        .withFromEntityId(bankTransactionEntity.getId())
+                        .withToEntityId(accountEntity.getId())
+                        .withDescription("Link between BankTransaction and Account");
+
+        createRelationship(bankTransactionToAccountRequest);
+
+        RelationshipsCreateCreateRequest bankTransactionToContactRequest =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_BANK_TRANSACTION_TO_CONTACT)
+                        .withFromEntityId(bankTransactionEntity.getId())
+                        .withToEntityId(contactEntity.getId())
+                        .withDescription("Link between BankTransaction and Contact");
+
+        createRelationship(bankTransactionToContactRequest);
+
+
+        EntitiesCreateCreateRequest lineItems = new EntitiesCreateCreateRequest()
+                .withProjectId("0")
+                .withName(prefix + PluginConstants.XERO_ENTITY_LINE_ITEM)
+                .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
+                .addField(new DataFieldsDTO().withName("AccountCode")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("LineItemId")
+                        .withDataType(CosightDataType.STRING)
+                        .withLabel(true))
+                .addField(new DataFieldsDTO().withName("AccountId")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("BankTransactionId")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("Description")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("DiscountAmount")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("DiscountRate")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("ItemCode")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("LineAmount")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("Quantity")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("RepeatingInvoiceId")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("TaxAmount")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("TaxType")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("UnitAmount")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addIndex("AccountId").addIndex("LineItemId");
+
+        EntitiesDTO lineItemEntity = createEntity(lineItems).orElseThrow(IllegalStateException::new);
+
+        RelationshipsCreateCreateRequest bankTransactionToLineItemRequest =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_BANK_TRANSACTION_TO_LINE_ITEM)
+                        .withFromEntityId(bankTransactionEntity.getId())
+                        .withToEntityId(lineItemEntity.getId())
+                        .withDescription("Link between BankTransaction and Line Item");
+
+        createRelationship(bankTransactionToLineItemRequest);
+
+
+        EntitiesCreateCreateRequest lineItemTracking = new EntitiesCreateCreateRequest()
+                .withProjectId("0")
+                .withName(prefix + PluginConstants.XERO_ENTITY_LINE_ITEM_TRACKING)
+                .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
+                .addField(new DataFieldsDTO().withName("Name")
+                        .withDataType(CosightDataType.STRING)
+                        .withLabel(true))
+                .addField(new DataFieldsDTO().withName("Option")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("TrackingCategoryId")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("TrackingOptionId")
+                        .withDataType(CosightDataType.STRING))
+                .addIndex("TrackingCategoryId").addIndex("TrackingOptionId");
+
+        EntitiesDTO lineItemTrackingEntity = createEntity(lineItemTracking).orElseThrow(IllegalStateException::new);
+
+        RelationshipsCreateCreateRequest lineItemToLineItemTrackingRequest =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_LINE_ITEM_TO_LINE_ITEM_TRACKING)
+                        .withFromEntityId(lineItemEntity.getId())
+                        .withToEntityId(lineItemTrackingEntity.getId())
+                        .withDescription("Link between LineItem and Line Item Tracking");
+
+        createRelationship(lineItemToLineItemTrackingRequest);
 
 
     }
@@ -222,22 +364,7 @@ public class EntityManagementServiceImpl {
 
         //Above is the flat contact object, it has many other things that hang off it that aren't flat that
         //we need to create as well as the relationships between them.
-        EntitiesDTO contact = null;
-        try {
-            contact = entityServiceWrapper.createEntityStructure(request);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - assume everything is done for now, return");
-                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_CONTACT);
-                contact = dto.getEnitiy();
-                //
-                return;
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
+        EntitiesDTO contact = createEntity(request).orElseThrow(IllegalStateException::new);
 
         //
         // now we need to create the following and link
@@ -256,22 +383,7 @@ public class EntityManagementServiceImpl {
                                 .withDataListItem("DELETED")))
                 .addIndex("ContactGroupID");
         ; // need to add config to add list items here
-        EntitiesDTO contactGroup = null;
-        try {
-            contactGroup = entityServiceWrapper.createEntityStructure(contactGroupRequest);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_CONTACT_GROUP);
-                contactGroup = dto.getEnitiy();
-
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
-
+        EntitiesDTO contactGroup = createEntity(contactGroupRequest).orElseThrow(IllegalStateException::new);
 
         RelationshipsCreateCreateRequest contactToContactGroup =
                 new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CONTACT_TO_CONTACT_GROUP)
@@ -279,18 +391,7 @@ public class EntityManagementServiceImpl {
                         .withToEntityId(contactGroup.getId())
                         .withDescription("Link between Contact and Contact Group");
 
-        RelationshipsDTO contactToContactGroupResult = null;
-        try {
-            contactToContactGroupResult = relationshipServiceWrapper.createRelationship(contactToContactGroup);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
+        createRelationship(contactToContactGroup);
 
 
         // Address
@@ -321,22 +422,7 @@ public class EntityManagementServiceImpl {
                 .addField(new DataFieldsDTO().withName("Region")
                         .withDataType(CosightDataType.STRING))
                 .addIndex("AddressLine1");
-        EntitiesDTO address = null;
-        try {
-            address = entityServiceWrapper.createEntityStructure(addressRequest);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_ADDRESS);
-                address = dto.getEnitiy();
-
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
-
+        EntitiesDTO address = createEntity(addressRequest).orElseThrow(IllegalStateException::new);
 
         RelationshipsCreateCreateRequest contactToAddress =
                 new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CONTACT_TO_ADDRESS)
@@ -344,18 +430,7 @@ public class EntityManagementServiceImpl {
                         .withToEntityId(address.getId())
                         .withDescription("Link between Contact and Address");
 
-        RelationshipsDTO contactToAddressResult = null;
-        try {
-            contactToAddressResult = relationshipServiceWrapper.createRelationship(contactToAddress);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
+        createRelationship(contactToAddress);
 
 
         // Attachment
@@ -376,22 +451,7 @@ public class EntityManagementServiceImpl {
                         .withDataType(CosightDataType.STRING))
                 .addIndex("AttachmentID");
         ;
-        EntitiesDTO attachment = null;
-        try {
-            attachment = entityServiceWrapper.createEntityStructure(attachmentRequest);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_ATTACHMENT);
-                attachment = dto.getEnitiy();
-
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
-
+        EntitiesDTO attachment = createEntity(attachmentRequest).orElseThrow(IllegalStateException::new);
 
         RelationshipsCreateCreateRequest contactToAttachment =
                 new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CONTACT_TO_ATTACHMENT)
@@ -399,18 +459,7 @@ public class EntityManagementServiceImpl {
                         .withToEntityId(attachment.getId())
                         .withDescription("Link between Contact and Contact Group");
 
-        RelationshipsDTO contactToAttachmentResult = null;
-        try {
-            contactToAttachmentResult = relationshipServiceWrapper.createRelationship(contactToAttachment);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
+        createRelationship(contactToAttachment);
 
         // Balances - these can be part of root instead of own object
 
@@ -442,21 +491,7 @@ public class EntityManagementServiceImpl {
                         .withDataType(CosightDataType.STRING))
                 .addIndex("BankAccountName");
 
-        EntitiesDTO batchPaymentDetails = null;
-        try {
-            batchPaymentDetails = entityServiceWrapper.createEntityStructure(batchpaymentDetailsRequest);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_BATCH_PAYMENT_DETAILS);
-                batchPaymentDetails = dto.getEnitiy();
-
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
+        EntitiesDTO batchPaymentDetails = createEntity(batchpaymentDetailsRequest).orElseThrow(IllegalStateException::new);
 
         RelationshipsCreateCreateRequest contactTobatchPaymentDetails =
                 new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CONTACT_TO_BATCH_PAYMENT_DETAILS)
@@ -464,19 +499,7 @@ public class EntityManagementServiceImpl {
                         .withToEntityId(batchPaymentDetails.getId())
                         .withDescription("Link between Contact and Contact Group");
 
-        RelationshipsDTO contactTobatchPaymentDetailsResult = null;
-        try {
-            contactTobatchPaymentDetailsResult = relationshipServiceWrapper.createRelationship(contactTobatchPaymentDetails);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
-
+        createRelationship(contactTobatchPaymentDetails);
 
         // BrandingTheme? - nope
 
@@ -492,21 +515,7 @@ public class EntityManagementServiceImpl {
                 .addField(new DataFieldsDTO().withName("IncludeInEmails")
                         .withDataType(CosightDataType.BOOLEAN))
                 .addIndex("EmailAddress");
-        EntitiesDTO contactPerson = null;
-        try {
-            contactPerson = entityServiceWrapper.createEntityStructure(contactPersonRequest);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_CONTACT_PERSON);
-                contactPerson = dto.getEnitiy();
-
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
+        EntitiesDTO contactPerson = createEntity(contactPersonRequest).orElseThrow(IllegalStateException::new);
 
 
         RelationshipsCreateCreateRequest contactTocontactPerson =
@@ -515,18 +524,7 @@ public class EntityManagementServiceImpl {
                         .withToEntityId(contactPerson.getId())
                         .withDescription("Link between Contact and Contact Group");
 
-        RelationshipsDTO contactTocontactPersonResult = null;
-        try {
-            contactTocontactPersonResult = relationshipServiceWrapper.createRelationship(contactTocontactPerson);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
+        createRelationship(contactTocontactPerson);
 
 
         // Phone
@@ -542,22 +540,7 @@ public class EntityManagementServiceImpl {
                         .withDataType(CosightDataType.STRING))
                 .addIndex("PhoneNumber").addIndex("PhoneAreaCode");
 
-        EntitiesDTO phone = null;
-        try {
-            phone = entityServiceWrapper.createEntityStructure(phoneRequest);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_PHONE);
-                phone = dto.getEnitiy();
-
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
-
+        EntitiesDTO phone = createEntity(phoneRequest).orElseThrow(IllegalStateException::new);
 
         RelationshipsCreateCreateRequest contactTophone =
                 new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CONTACT_TO_PHONE)
@@ -565,19 +548,7 @@ public class EntityManagementServiceImpl {
                         .withToEntityId(phone.getId())
                         .withDescription("Link between Contact and Contact Group");
 
-        RelationshipsDTO contactTophoneResult = null;
-        try {
-            contactTophoneResult = relationshipServiceWrapper.createRelationship(contactTophone);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
-
+        createRelationship(contactTophone);
 
         // SalesTrackingCategory
         EntitiesCreateCreateRequest salesTrackingCatRequest = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_SALES_TRACKING_CATEGORY)
@@ -587,21 +558,7 @@ public class EntityManagementServiceImpl {
                 .addField(new DataFieldsDTO().withName("TrackingCategoryName")
                         .withDataType(CosightDataType.STRING).withLabel(true))
                 .addIndex("TrackingOptionName");
-        EntitiesDTO salesTrackingCategory = null;
-        try {
-            salesTrackingCategory = entityServiceWrapper.createEntityStructure(salesTrackingCatRequest);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_SALES_TRACKING_CATEGORY);
-                salesTrackingCategory = dto.getEnitiy();
-
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
+        EntitiesDTO salesTrackingCategory = createEntity(salesTrackingCatRequest).orElseThrow(IllegalStateException::new);
 
 
         RelationshipsCreateCreateRequest contactTosalesTrackingCategory =
@@ -610,41 +567,16 @@ public class EntityManagementServiceImpl {
                         .withToEntityId(salesTrackingCategory.getId())
                         .withDescription("Link between Contact and Contact Group");
 
-        RelationshipsDTO contactTosalesTrackingCategoryResult = null;
-        try {
-            contactTosalesTrackingCategoryResult = relationshipServiceWrapper.createRelationship(contactTosalesTrackingCategory);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
+        createRelationship(contactTosalesTrackingCategory);
 
 
         // ValidationError
-        ValidationError v = new ValidationError();
         EntitiesCreateCreateRequest validationErrorReq = new EntitiesCreateCreateRequest().withName(prefix + PluginConstants.XERO_ENTITY_VALIDATION_ERROR)
                 .withProjectId("0")
                 .addField(new DataFieldsDTO().withName("Message")
                         .withDataType(CosightDataType.STRING).withLabel(true));
-        EntitiesDTO validationError = null;
-        try {
-            validationError = entityServiceWrapper.createEntityStructure(validationErrorReq);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_VALIDATION_ERROR);
-                validationError = dto.getEnitiy();
-
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
+        EntitiesDTO validationError = createEntity(validationErrorReq)
+                .orElseThrow(IllegalStateException::new);
 
 
         RelationshipsCreateCreateRequest contactTovalidationError =
@@ -653,17 +585,6 @@ public class EntityManagementServiceImpl {
                         .withToEntityId(validationError.getId())
                         .withDescription("Link between Contact and Contact Group");
 
-        RelationshipsDTO contactTovalidationErrorResult = null;
-        try {
-            contactTovalidationErrorResult = relationshipServiceWrapper.createRelationship(contactTovalidationError);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - continue");
-                // will have to think about an update mechanism here with versioning etc.
-            } else {
-                e.printStackTrace();
-            }
-        }
+        createRelationship(contactTovalidationError);
     }
 }

@@ -10,7 +10,7 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
 
 def envName = System.getenv('ENV_NAME');
-def modelVersion = 'cosight-model-1.5.3-SNAPSHOT';
+def modelVersion = 'cosight-model-1.5.4-SNAPSHOT';
 def sdkVersion = 'cosight-sdk-1.3.7-SNAPSHOT';
 repositories {
 	mavenCentral()

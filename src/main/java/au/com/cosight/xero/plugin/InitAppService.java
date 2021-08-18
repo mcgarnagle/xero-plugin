@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xero.api.ApiClient;
 import com.xero.api.client.AccountingApi;
 import com.xero.models.accounting.Accounts;
+import com.xero.models.accounting.BankTransactions;
 import com.xero.models.accounting.Contacts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,17 +72,25 @@ public class InitAppService implements CommandLineRunner {
         // build contacts
         logger.info("================================== CHECKING IF CONTACTS BUILT ========================================");
         // we'll put check in here later. need to update SDK
-//        buildContactsEntity();
-        buildAccountsEntity();
+        buildContactsEntity();
+//        buildAccountsEntity();
         logger.info("================================== CHECKING IF CONTACTS BUILT SUCCESS ========================================");
         ArrayList tenId = (ArrayList) cosightExecutionContext.getParameters().get("Organisation ID");
         String xeroTenantId = (String) tenId.get(0);
         logger.info("================================== FETCHING OAUTH2 DETAILS ========================================");
         ExternalOAuth2Credentials deets = ExternalOAuth2Credentials.getInstance();
         String accessToken = deets.getToken().getAccessToken();
-
-        logger.info("ACCESS TOKEN =" + accessToken);
         logger.info("================================== FETCHING OAUTH2 DETAILS SUCCESS ========================================");
+
+        ApiClient defaultClient = new ApiClient();
+//        DecodedJWT jwt = JWT.decode(accessToken);
+//        DecodedJWT verified = defaultClient.verify(accessToken);
+//        logger.info("ACCESS TOKEN verified=" +verified.getToken());
+
+        ApiClient defaultIdentityClient = new ApiClient("https://api.xero.com", null, null, null, null);
+
+//        IdentityApi idApi = new IdentityApi(defaultIdentityClient);
+//        List<Connection> connection = idApi.getConnections(jwt.getToken(),null);
 
         // now lets process the action
         if ("getContacts".equalsIgnoreCase(args[0])) {
@@ -97,7 +106,6 @@ public class InitAppService implements CommandLineRunner {
             logger.info("================== FETCHING ACCOUNTS.CONTACTS FROM XERO USING TENANT-ID {} =====================", xeroTenantId);
 
             // XERO API CALLS - we'll move this to a service later
-            ApiClient defaultClient = new ApiClient();
             AccountingApi accountingApi = AccountingApi.getInstance(defaultClient);
             try {
                 Contacts contacts = accountingApi.getContacts(accessToken, xeroTenantId, null, null, null, null, null, null, null);
@@ -113,9 +121,14 @@ public class InitAppService implements CommandLineRunner {
             }
 
         }
-        if ("getAccounts".equalsIgnoreCase(args[0])) {
+        if("init".equalsIgnoreCase(args[0])) {
+            buildAccountsEntity();
+            buildContactsEntity();
+            buildBankTransactionEntity();
 
-            ApiClient defaultClient = new ApiClient();
+        }
+
+        if ("getAccounts".equalsIgnoreCase(args[0])) {
             AccountingApi accountingApi = AccountingApi.getInstance(defaultClient);
             try {
                 Accounts accounts = accountingApi.getAccounts(accessToken, xeroTenantId, null, null, null);
@@ -131,6 +144,20 @@ public class InitAppService implements CommandLineRunner {
 
         }
         if ("accounts.getBankTransactions".equalsIgnoreCase(args[0])) {
+//            buildBankTransactionEntity();
+            AccountingApi accountingApi = AccountingApi.getInstance(defaultClient);
+            try {
+                BankTransactions bankTransactions = accountingApi.getBankTransactions(accessToken, xeroTenantId, null, null, null, null, null);
+
+                bankTransactions.getBankTransactions().forEach(bankTransaction -> {
+//                bankTransaction.get
+
+                });
+
+            } catch (Exception e) {
+                logger.error("error getting Accounts {}", e.getMessage());
+                e.printStackTrace();
+            }
 
 
         }
@@ -253,6 +280,11 @@ public class InitAppService implements CommandLineRunner {
 
     private void buildAccountsEntity() {
         entityManagementService.createAccountClass("");
+    }
+
+    private void buildBankTransactionEntity() {
+        entityManagementService.createBankTransactionClass("");
+
     }
 
 }
