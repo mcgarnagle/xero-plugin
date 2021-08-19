@@ -2,7 +2,6 @@ package au.com.cosight.xero.plugin.mapper;
 
 import au.com.cosight.entity.domain.EntityInstance;
 import au.com.cosight.entity.domain.InstanceValue;
-import au.com.cosight.entity.service.dto.EntitiesDTO;
 import au.com.cosight.xero.plugin.PluginConstants;
 import com.xero.models.accounting.*;
 import org.threeten.bp.DateTimeUtils;
@@ -84,7 +83,9 @@ public class ContactMapper {
         contactInstanceValues.add(new InstanceValue("TaxNumber", contact.getTaxNumber()));
         contactInstanceValues.add(new InstanceValue("TrackingCategoryName", contact.getTrackingCategoryName()));
         contactInstanceValues.add(new InstanceValue("TrackingCategoryOption", contact.getTrackingCategoryOption()));
-        contactInstanceValues.add(new InstanceValue("UpdatedDateUTC", DateTimeUtils.toDate(contact.getUpdatedDateUTCAsDate().toInstant())));
+        if (contact.getUpdatedDateUTCAsDate() != null) {
+            contactInstanceValues.add(new InstanceValue("UpdatedDateUTC", DateTimeUtils.toDate(contact.getUpdatedDateUTCAsDate().toInstant())));
+        }
         contactInstanceValues.add(new InstanceValue("Website", contact.getAccountNumber()));
         contactInstanceValues.add(new InstanceValue("XeroNetworkKey", contact.getAccountNumber()));
         contactInstance.setInstanceValues(contactInstanceValues);

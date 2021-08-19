@@ -5,6 +5,7 @@ import au.com.cosight.sdk.plugin.runtime.CosightExecutionContext;
 import au.com.cosight.xero.plugin.service.EntityManagementServiceImpl;
 import au.com.cosight.xero.plugin.service.ForexQuoteService;
 import au.com.cosight.xero.plugin.service.xero.AccountService;
+import au.com.cosight.xero.plugin.service.xero.BankTransactionService;
 import au.com.cosight.xero.plugin.service.xero.ContactService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xero.api.ApiClient;
@@ -32,15 +33,20 @@ public class InitAppService implements CommandLineRunner {
     private final EntityManagementServiceImpl entityManagementService;
     private final ContactService contactService;
     private final AccountService accountService;
+    private final BankTransactionService bankTransactionService;
 
 
-    public InitAppService(CosightExecutionContext cosightExecutionContext, ForexQuoteService forexQuoteService, ObjectMapper objectMapper, EntityManagementServiceImpl entityManagementService, ContactService contactService, AccountService accountService) {
+    public InitAppService(CosightExecutionContext cosightExecutionContext, ForexQuoteService forexQuoteService,
+                          ObjectMapper objectMapper, EntityManagementServiceImpl entityManagementService,
+                          ContactService contactService, AccountService accountService,
+                          BankTransactionService bankTransactionService) {
         this.cosightExecutionContext = cosightExecutionContext;
         this.forexQuoteService = forexQuoteService;
         this.objectMapper = objectMapper;
         this.entityManagementService = entityManagementService;
         this.contactService = contactService;
         this.accountService = accountService;
+        this.bankTransactionService = bankTransactionService;
     }
 
     @Override
@@ -72,9 +78,12 @@ public class InitAppService implements CommandLineRunner {
         // build contacts
         logger.info("================================== CHECKING IF CONTACTS BUILT ========================================");
         // we'll put check in here later. need to update SDK
-        buildContactsEntity();
+//        buildContactsEntity();
 //        buildAccountsEntity();
+//        buildBankTransactionEntity();
         logger.info("================================== CHECKING IF CONTACTS BUILT SUCCESS ========================================");
+
+
         ArrayList tenId = (ArrayList) cosightExecutionContext.getParameters().get("Organisation ID");
         String xeroTenantId = (String) tenId.get(0);
         logger.info("================================== FETCHING OAUTH2 DETAILS ========================================");
@@ -121,7 +130,7 @@ public class InitAppService implements CommandLineRunner {
             }
 
         }
-        if("init".equalsIgnoreCase(args[0])) {
+        if ("init".equalsIgnoreCase(args[0])) {
             buildAccountsEntity();
             buildContactsEntity();
             buildBankTransactionEntity();
@@ -143,14 +152,14 @@ public class InitAppService implements CommandLineRunner {
             }
 
         }
-        if ("accounts.getBankTransactions".equalsIgnoreCase(args[0])) {
+        if ("getBankTransactions".equalsIgnoreCase(args[0])) {
 //            buildBankTransactionEntity();
             AccountingApi accountingApi = AccountingApi.getInstance(defaultClient);
             try {
                 BankTransactions bankTransactions = accountingApi.getBankTransactions(accessToken, xeroTenantId, null, null, null, null, null);
 
                 bankTransactions.getBankTransactions().forEach(bankTransaction -> {
-//                bankTransaction.get
+                    bankTransactionService.upsertBankTransaction(bankTransaction);
 
                 });
 
@@ -161,107 +170,107 @@ public class InitAppService implements CommandLineRunner {
 
 
         }
-        if ("accounts.getBankTransfers".equalsIgnoreCase(args[0])) {
+        if ("getBankTransfers".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getBatchPayments".equalsIgnoreCase(args[0])) {
+        if ("getBatchPayments".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getBudgets".equalsIgnoreCase(args[0])) {
+        if ("getBudgets".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getContactGroups".equalsIgnoreCase(args[0])) {
+        if ("getContactGroups".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getCreditNotes".equalsIgnoreCase(args[0])) {
+        if ("getCreditNotes".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getCurrencies".equalsIgnoreCase(args[0])) {
+        if ("getCurrencies".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getEmployees".equalsIgnoreCase(args[0])) {
+        if ("getEmployees".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getExpenseClaims".equalsIgnoreCase(args[0])) {
+        if ("getExpenseClaims".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getInvoiceReminders".equalsIgnoreCase(args[0])) {
+        if ("getInvoiceReminders".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getInvoices".equalsIgnoreCase(args[0])) {
+        if ("getInvoices".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getItems".equalsIgnoreCase(args[0])) {
+        if ("getItems".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getJournals".equalsIgnoreCase(args[0])) {
+        if ("getJournals".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getLinkedTransactions".equalsIgnoreCase(args[0])) {
+        if ("getLinkedTransactions".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getManualJournals".equalsIgnoreCase(args[0])) {
+        if ("getManualJournals".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getOrganisations".equalsIgnoreCase(args[0])) {
+        if ("getOrganisations".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getOverpayments".equalsIgnoreCase(args[0])) {
+        if ("getOverpayments".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getPayments".equalsIgnoreCase(args[0])) {
+        if ("getPayments".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getPaymentServices".equalsIgnoreCase(args[0])) {
+        if ("getPaymentServices".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getPrepayments".equalsIgnoreCase(args[0])) {
+        if ("getPrepayments".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getPurchaseOrders".equalsIgnoreCase(args[0])) {
+        if ("getPurchaseOrders".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getQuotes".equalsIgnoreCase(args[0])) {
+        if ("getQuotes".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getReceipts".equalsIgnoreCase(args[0])) {
+        if ("getReceipts".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getRepeatingInvoices".equalsIgnoreCase(args[0])) {
+        if ("getRepeatingInvoices".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getReports".equalsIgnoreCase(args[0])) {
+        if ("getReports".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getSetup".equalsIgnoreCase(args[0])) {
+        if ("getSetup".equalsIgnoreCase(args[0])) {
 
 
         }
-        if ("accounts.getTaxRates".equalsIgnoreCase(args[0])) {
+        if ("getTaxRates".equalsIgnoreCase(args[0])) {
 
 
         }

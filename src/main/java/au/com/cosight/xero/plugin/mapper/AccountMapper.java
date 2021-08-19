@@ -40,7 +40,9 @@ public class AccountMapper {
         accountInstanceValues.add(new InstanceValue("Status", account.getStatus()));
         accountInstanceValues.add(new InstanceValue("Type", account.getType()));
         accountInstanceValues.add(new InstanceValue("TaxType", account.getTaxType()));
-        accountInstanceValues.add(new InstanceValue("UpdatedDateUTC", DateTimeUtils.toDate(account.getUpdatedDateUTCAsDate().toInstant())));
+        if(account.getUpdatedDateUTCAsDate()!=null) {
+            accountInstanceValues.add(new InstanceValue("UpdatedDateUTC", DateTimeUtils.toDate(account.getUpdatedDateUTCAsDate().toInstant())));
+        }
 
         instanceList.add(accountInstance);
 

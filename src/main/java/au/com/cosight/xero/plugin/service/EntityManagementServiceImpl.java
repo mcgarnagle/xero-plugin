@@ -170,7 +170,8 @@ public class EntityManagementServiceImpl {
                 .addField(new DataFieldsDTO().withName("UpdatedDateUTC")
                         .withDataType(CosightDataType.STRING))
                 .addField(new DataFieldsDTO().withName("Url")
-                        .withDataType(CosightDataType.STRING));
+                        .withDataType(CosightDataType.STRING))
+                .addIndex("BankTransactionId");
 
         EntitiesDTO bankTransactionEntity = createEntity(bankTransactionRequest).orElseThrow(IllegalStateException::new);
 
