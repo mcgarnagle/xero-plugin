@@ -60,6 +60,7 @@ public class BankTransactionServiceImpl implements BankTransactionService {
                 .findFirst().get();
         if (accountInstance != null) {
             // if there is an account attached, lets process...
+            // if there is an account, either find it, or create it, but don't update it
             accountInstance = entityServiceWrapper.save(accountInstance);
             RelationshipsDTO relo = new RelationshipsDTO();
             relo.setFromEntityId(bankTransactionInstance.getId().replaceAll("#", ""));

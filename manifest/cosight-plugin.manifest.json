@@ -41,6 +41,54 @@
           "promptType": "simple"
         }
       ]
+    },
+    {
+      "name": "getAccounts",
+      "showPrompt": false,
+      "ruleProcessType": "merge",
+      "batchSize": "100",
+      "mappingFields": [],
+      "parameters": [
+        {
+          "name": "OrganisationName",
+          "prompt": "Organisation Name from XERO",
+          "type": "String",
+          "promptType": "simple"
+        }
+      ]
+    },
+    {
+      "name": "getBankTransactions",
+      "showPrompt": false,
+      "ruleProcessType": "merge",
+      "batchSize": "100",
+      "mappingFields": [],
+      "parameters": [
+        {
+          "name": "OrganisationName",
+          "prompt": "Organisation Name from XERO",
+          "type": "String",
+          "promptType": "simple"
+        }
+      ]
+    },
+    {
+      "name": "init",
+      "showPrompt": false,
+      "ruleProcessType": "merge",
+      "batchSize": "100",
+      "mappingFields": [],
+      "parameters": [
+        {
+          "name": "OrganisationName",
+          "prompt": "Organisation Name from XERO",
+          "type": "String",
+          "promptType": "simple"
+        }
+      ]
     }
+
+
+
   ]
 }
