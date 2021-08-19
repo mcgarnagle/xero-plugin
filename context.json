@@ -1,6 +1,6 @@
 {
   "parameters": {
-    "Organisation ID": ["6f6bbd6d-8dcc-486c-9f1b-bab1037bb630"]
+    "OrganisationName": ["Demo Company (AU)"]
   },
   "action": {
     "name": "currencyQuote",

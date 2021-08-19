@@ -35,8 +35,8 @@
       "mappingFields": [],
       "parameters": [
         {
-          "name": "Organisation ID",
-          "prompt": "Organisation ID from XERO",
+          "name": "OrganisationName",
+          "prompt": "Organisation Name from XERO",
           "type": "String",
           "promptType": "simple"
         }
