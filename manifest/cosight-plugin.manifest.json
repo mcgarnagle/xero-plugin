@@ -37,7 +37,7 @@
         {
           "name": "OrganisationName",
           "prompt": "Organisation Name from XERO",
-          "type": "String",
+          "type": "STRING",
           "promptType": "simple"
         }
       ]
@@ -52,7 +52,7 @@
         {
           "name": "OrganisationName",
           "prompt": "Organisation Name from XERO",
-          "type": "String",
+          "type": "STRING",
           "promptType": "simple"
         }
       ]
@@ -67,7 +67,7 @@
         {
           "name": "OrganisationName",
           "prompt": "Organisation Name from XERO",
-          "type": "String",
+          "type": "STRING",
           "promptType": "simple"
         }
       ]
@@ -82,13 +82,10 @@
         {
           "name": "OrganisationName",
           "prompt": "Organisation Name from XERO",
-          "type": "String",
+          "type": "STRING",
           "promptType": "simple"
         }
       ]
     }
-
-
-
   ]
 }
