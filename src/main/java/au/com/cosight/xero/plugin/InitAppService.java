@@ -14,6 +14,7 @@ import com.xero.api.client.IdentityApi;
 import com.xero.models.accounting.Accounts;
 import com.xero.models.accounting.BankTransactions;
 import com.xero.models.accounting.Contacts;
+import com.xero.models.accounting.Invoices;
 import com.xero.models.identity.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,8 +139,8 @@ public class InitAppService implements CommandLineRunner {
 
         }
         if ("init".equalsIgnoreCase(args[0])) {
-            buildAccountsEntity();
             buildContactsEntity();
+            buildAccountsEntity();
             buildBankTransactionEntity();
 
         }
@@ -156,6 +157,21 @@ public class InitAppService implements CommandLineRunner {
             } catch (Exception e) {
                 logger.error("error getting Accounts {}", e.getMessage());
                 e.printStackTrace();
+            }
+
+        }
+        if ("getInvoices".equalsIgnoreCase(args[0])) {
+            AccountingApi accountingApi = AccountingApi.getInstance(defaultClient);
+            try {
+                Invoices invoices = accountingApi.getInvoices(accessToken, xeroTenantId, null,
+                        null, null, null, null, null, null,
+                        null, false, false, null, false);
+
+                invoices.getInvoices().forEach(invoice -> {
+                    // iplement invoices
+                });
+            } catch (Exception e) {
+                logger.error("error getting Invoices {} ", e.getMessage());
             }
 
         }
@@ -210,10 +226,6 @@ public class InitAppService implements CommandLineRunner {
 
         }
         if ("getInvoiceReminders".equalsIgnoreCase(args[0])) {
-
-
-        }
-        if ("getInvoices".equalsIgnoreCase(args[0])) {
 
 
         }
