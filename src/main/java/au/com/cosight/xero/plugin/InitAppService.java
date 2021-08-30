@@ -11,10 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xero.api.ApiClient;
 import com.xero.api.client.AccountingApi;
 import com.xero.api.client.IdentityApi;
-import com.xero.models.accounting.Accounts;
-import com.xero.models.accounting.BankTransactions;
-import com.xero.models.accounting.Contacts;
-import com.xero.models.accounting.Invoices;
+import com.xero.models.accounting.*;
 import com.xero.models.identity.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,6 +139,7 @@ public class InitAppService implements CommandLineRunner {
             buildContactsEntity();
             buildAccountsEntity();
             buildBankTransactionEntity();
+            buildInvoiceEntities();
 
         }
 
@@ -149,7 +147,7 @@ public class InitAppService implements CommandLineRunner {
             AccountingApi accountingApi = AccountingApi.getInstance(defaultClient);
             try {
                 Accounts accounts = accountingApi.getAccounts(accessToken, xeroTenantId, null, null, null);
-
+                accountingApi.getItems(accessToken, xeroTenantId, null, null, null, null);
                 accounts.getAccounts().forEach(account -> {
                     accountService.upsertAccount(account);
                 });
@@ -168,6 +166,7 @@ public class InitAppService implements CommandLineRunner {
                         null, false, false, null, false);
 
                 invoices.getInvoices().forEach(invoice -> {
+
                     // iplement invoices
                 });
             } catch (Exception e) {
@@ -230,6 +229,19 @@ public class InitAppService implements CommandLineRunner {
 
         }
         if ("getItems".equalsIgnoreCase(args[0])) {
+            AccountingApi accountingApi = AccountingApi.getInstance(defaultClient);
+            try {
+                Items items = accountingApi.getItems(accessToken, xeroTenantId, null, null, null, null);
+                items.getItems().forEach(item -> {
+
+//                    item.get
+
+                });
+
+            } catch (Exception e) {
+                logger.error("error getting Accounts {}", e.getMessage());
+                e.printStackTrace();
+            }
 
 
         }
@@ -332,6 +344,10 @@ public class InitAppService implements CommandLineRunner {
     private void buildBankTransactionEntity() {
         entityManagementService.createBankTransactionClass("");
 
+    }
+
+    private void buildInvoiceEntities() {
+        entityManagementService.createInvoiceClass("");
     }
 
 }

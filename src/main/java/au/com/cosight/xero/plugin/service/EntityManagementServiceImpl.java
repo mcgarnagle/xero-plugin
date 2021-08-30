@@ -278,6 +278,565 @@ public class EntityManagementServiceImpl {
 
     }
 
+    public void createInvoiceClass(String prefix) {
+        entityServiceWrapper.auth();
+        relationshipServiceWrapper.auth();
+        EntitiesCreateCreateRequest request = new EntitiesCreateCreateRequest()
+                .withProjectId("0")
+                .withName(prefix + PluginConstants.XERO_ENTITY_INVOICE )
+                .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
+                .addField(new DataFieldsDTO().withName("AmountCredited")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("AmountDue")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("AmountPaid")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("InvoiceId")
+                        .withDataType(CosightDataType.STRING)
+                        .withLabel(true))
+                .addField(new DataFieldsDTO().withName("BrandingThemeId")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("CiSDeduction")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("CiSRate")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("CurrencyCode")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("CurrencyRate")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Date")
+                        .withDataType(CosightDataType.DATE))
+                .addField(new DataFieldsDTO().withName("DueDate")
+                        .withDataType(CosightDataType.DATE))
+                .addField(new DataFieldsDTO().withName("ExpectedPaymentDate")
+                        .withDataType(CosightDataType.DATE))
+                .addField(new DataFieldsDTO().withName("FullyPaidOnDate")
+                        .withDataType(CosightDataType.DATE))
+                .addField(new DataFieldsDTO().withName("HasAttachments")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("HasErrors")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("InvoiceNumber")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("IsDiscounted")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("PlannedPaymentDate")
+                        .withDataType(CosightDataType.DATE))
+                .addField(new DataFieldsDTO().withName("Reference")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("RepeatingInvoiceId")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("SentToContact")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("Status")
+                        .withDataType(CosightDataType.LIST)
+                        .withConfig(new DatafieldConfig()
+                                .withDataListItem("AUTHORISED")
+                                .withDataListItem("DELETED")
+                                .withDataListItem("DRAFT")
+                                .withDataListItem("PAID")
+                                .withDataListItem("SUBMITTED")
+                                .withDataListItem("VOIDED")))
+                .addField(new DataFieldsDTO().withName("Subtotal")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Total")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("TotalDiscount")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("TotalTax")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Type")
+                        .withDataType(CosightDataType.LIST)
+                        .withConfig(new DatafieldConfig()
+                                .withDataListItem("ACCPAY")
+                                .withDataListItem("ACCPAYCREDIT")
+                                .withDataListItem("ACCREC")
+                                .withDataListItem("ACCRECCREDIT")
+                                .withDataListItem("APOVERPAYMENT")
+                                .withDataListItem("APPREPAYMENT")
+                                .withDataListItem("AROVERPAYMENT")
+                                .withDataListItem("ARPREPAYMENT")))
+                .addField(new DataFieldsDTO().withName("UpdatedDateUTC")
+                        .withDataType(CosightDataType.DATE_TIME))
+                .addField(new DataFieldsDTO().withName("URL")
+                        .withDataType(CosightDataType.STRING))
+                .addIndex("InvoiceId");
+
+        EntitiesDTO invoiceEntity = createEntity(request).orElseThrow(IllegalStateException::new);
+        EntitiesDTO attachmentEntity = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_ATTACHMENT).getEnitiy();
+        EntitiesDTO validationErr = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_VALIDATION_ERROR).getEnitiy();
+        EntitiesDTO contactEntity = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_CONTACT).getEnitiy();
+        EntitiesDTO lineItemEntity = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_LINE_ITEM).getEnitiy();
+        EntitiesDTO accountEntity = entityServiceWrapper.getEntityByClassname(PluginConstants.XERO_ENTITY_ACCOUNT).getEnitiy();
+
+
+        // create credit note
+        // credit note is linked to From Invoice
+        // Credit note links to Allocation, LineItem, Contact and Payment
+
+        EntitiesCreateCreateRequest creditNoteRequest = new EntitiesCreateCreateRequest()
+                .withProjectId("0")
+                .withName(prefix + PluginConstants.XERO_ENTITY_CREDIT_NOTE)
+                .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
+                .addField(new DataFieldsDTO().withName("CreditNoteId")
+                        .withDataType(CosightDataType.DOUBLE).withLabel(true))
+                .addField(new DataFieldsDTO().withName("AppliedAmount")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("CreditNoteNumber")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("BrandingThemeId")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("CiSDeduction")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("CiSRate")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("CurrencyCode")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("CurrencyRate")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Date")
+                        .withDataType(CosightDataType.DATE))
+                .addField(new DataFieldsDTO().withName("DueDate")
+                        .withDataType(CosightDataType.DATE))
+                .addField(new DataFieldsDTO().withName("FullyPaidOnDate")
+                        .withDataType(CosightDataType.DATE))
+                .addField(new DataFieldsDTO().withName("HasAttachments")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("HasErrors")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("LineAmountTypes")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("Reference")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("RemainingCredit")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("SentToContact")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("Status")
+                        .withDataType(CosightDataType.LIST)
+                        .withConfig(new DatafieldConfig()
+                                .withDataListItem("AUTHORISED")
+                                .withDataListItem("DELETED")
+                                .withDataListItem("DRAFT")
+                                .withDataListItem("PAID")
+                                .withDataListItem("SUBMITTED")
+                                .withDataListItem("VOIDED")))
+                .addField(new DataFieldsDTO().withName("Subtotal")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Total")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("TotalTax")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Type")
+                        .withDataType(CosightDataType.LIST)
+                        .withConfig(new DatafieldConfig()
+                                .withDataListItem("ACCPAY")
+                                .withDataListItem("ACCPAYCREDIT")
+                                .withDataListItem("ACCREC")
+                                .withDataListItem("ACCRECCREDIT")
+                                .withDataListItem("APOVERPAYMENT")
+                                .withDataListItem("APPREPAYMENT")
+                                .withDataListItem("AROVERPAYMENT")
+                                .withDataListItem("ARPREPAYMENT")))
+                .addField(new DataFieldsDTO().withName("UpdatedDateUTC")
+                        .withDataType(CosightDataType.DATE_TIME))
+                .addIndex("CreditNoteId");
+
+        EntitiesDTO creditNote = entityServiceWrapper.createEntityStructure(creditNoteRequest);
+
+
+        // create allocation
+        EntitiesCreateCreateRequest allocationRequest = new EntitiesCreateCreateRequest()
+                .withProjectId("0")
+                .withName(prefix + PluginConstants.XERO_ENTITY_ALLOCATION)
+                .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
+                .addField(new DataFieldsDTO().withName("Status")
+                        .withDataType(CosightDataType.STRING).withLabel(true))
+                .addField(new DataFieldsDTO().withName("Amount")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Date")
+                        .withDataType(CosightDataType.DATE));
+
+        EntitiesDTO allocationEntity = entityServiceWrapper.createEntityStructure(allocationRequest);
+
+        // create payment
+        EntitiesCreateCreateRequest paymentRequest = new EntitiesCreateCreateRequest()
+                .withProjectId("0")
+                .withName(prefix + PluginConstants.XERO_ENTITY_PAYMENT)
+                .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
+                .addField(new DataFieldsDTO().withName("PaymentId")
+                        .withDataType(CosightDataType.STRING).withLabel(true))
+                .addField(new DataFieldsDTO().withName("Amount")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Code")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("BankAccountNumber")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("BatchPaymentId")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("CreditNoteNumber")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("CurrencyRate")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Date")
+                        .withDataType(CosightDataType.DATE))
+                .addField(new DataFieldsDTO().withName("Details")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("HasAccount")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("HasValidationErrors")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("InvoiceNumber")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("IsReconciled")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("Particulars")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("PaymentType")
+                        .withDataType(CosightDataType.LIST)
+                        .withConfig(new DatafieldConfig()
+                                .withDataListItem("ACCPAY")
+                                .withDataListItem("ACCPAYCREDIT")
+                                .withDataListItem("ACCREC")
+                                .withDataListItem("ACCRECCREDIT")
+                                .withDataListItem("APOVERPAYMENT")
+                                .withDataListItem("APPREPAYMENT")
+                                .withDataListItem("AROVERPAYMENT")
+                                .withDataListItem("ARPREPAYMENT")))
+
+                .addField(new DataFieldsDTO().withName("Reference")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("Status")
+                        .withDataType(CosightDataType.LIST)
+                        .withConfig(new DatafieldConfig()
+                                .withDataListItem("AUTHORISED")
+                                .withDataListItem("DELETED")
+                                .withDataListItem("DRAFT")
+                                .withDataListItem("PAID")
+                                .withDataListItem("SUBMITTED")
+                                .withDataListItem("VOIDED")))
+                .addField(new DataFieldsDTO().withName("UpdatedDateUTC")
+                        .withDataType(CosightDataType.DATE_TIME));
+        EntitiesDTO paymentEntity = entityServiceWrapper.createEntityStructure(paymentRequest);
+
+
+
+        //create overpayment
+        EntitiesCreateCreateRequest overpaymentRequest = new EntitiesCreateCreateRequest()
+                .withProjectId("0")
+                .withName(prefix + PluginConstants.XERO_ENTITY_OVERPAYMENT)
+                .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
+                .addField(new DataFieldsDTO().withName("OverpaymentId")
+                        .withDataType(CosightDataType.STRING).withLabel(true))
+                .addField(new DataFieldsDTO().withName("AppliedAmount")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("CurrencyCode")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("CurrencyRate")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Date")
+                        .withDataType(CosightDataType.DATE))
+                .addField(new DataFieldsDTO().withName("HasAttachments")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("LineAmountTypes")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("RemainingCredit")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Status")
+                        .withDataType(CosightDataType.LIST)
+                        .withConfig(new DatafieldConfig()
+                                .withDataListItem("AUTHORISED")
+                                .withDataListItem("DELETED")
+                                .withDataListItem("DRAFT")
+                                .withDataListItem("PAID")
+                                .withDataListItem("SUBMITTED")
+                                .withDataListItem("VOIDED")))
+                .addField(new DataFieldsDTO().withName("Subtotal")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Total")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("TotalTax")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Type")
+                        .withDataType(CosightDataType.LIST)
+                        .withConfig(new DatafieldConfig()
+                                .withDataListItem("ACCPAY")
+                                .withDataListItem("ACCPAYCREDIT")
+                                .withDataListItem("ACCREC")
+                                .withDataListItem("ACCRECCREDIT")
+                                .withDataListItem("APOVERPAYMENT")
+                                .withDataListItem("APPREPAYMENT")
+                                .withDataListItem("AROVERPAYMENT")
+                                .withDataListItem("ARPREPAYMENT")))
+                .addField(new DataFieldsDTO().withName("UpdatedDateUTC")
+                        .withDataType(CosightDataType.DATE_TIME));
+
+        EntitiesDTO overpaymentEntity = entityServiceWrapper.createEntityStructure(overpaymentRequest);
+
+
+
+        //create prepayment
+        EntitiesCreateCreateRequest prepaymentRequest = new EntitiesCreateCreateRequest()
+                .withProjectId("0")
+                .withName(prefix + PluginConstants.XERO_ENTITY_PREPAYMENT)
+                .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
+                .addField(new DataFieldsDTO().withName("PrepaymentId").withLabel(true))
+                .addField(new DataFieldsDTO().withName("AppliedAmount")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("CurrencyCode")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("CurrencyRate")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Date")
+                        .withDataType(CosightDataType.DATE))
+                .addField(new DataFieldsDTO().withName("HasAttachments")
+                        .withDataType(CosightDataType.BOOLEAN))
+                .addField(new DataFieldsDTO().withName("LineAmountTypes")
+                        .withDataType(CosightDataType.STRING))
+                .addField(new DataFieldsDTO().withName("Reference")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("RemainingCredit")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Status")
+                        .withDataType(CosightDataType.LIST)
+                        .withConfig(new DatafieldConfig()
+                                .withDataListItem("AUTHORISED")
+                                .withDataListItem("DELETED")
+                                .withDataListItem("DRAFT")
+                                .withDataListItem("PAID")
+                                .withDataListItem("SUBMITTED")
+                                .withDataListItem("VOIDED")))
+                .addField(new DataFieldsDTO().withName("SubTotal")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Total")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("TotalTax")
+                        .withDataType(CosightDataType.DOUBLE))
+                .addField(new DataFieldsDTO().withName("Type")
+                        .withDataType(CosightDataType.LIST)
+                        .withConfig(new DatafieldConfig()
+                                .withDataListItem("ACCPAY")
+                                .withDataListItem("ACCPAYCREDIT")
+                                .withDataListItem("ACCREC")
+                                .withDataListItem("ACCRECCREDIT")
+                                .withDataListItem("APOVERPAYMENT")
+                                .withDataListItem("APPREPAYMENT")
+                                .withDataListItem("AROVERPAYMENT")
+                                .withDataListItem("ARPREPAYMENT")))
+                .addField(new DataFieldsDTO().withName("UpdatedDateUTC")
+                        .withDataType(CosightDataType.DATE_TIME));
+
+        EntitiesDTO prepaymentEntity = entityServiceWrapper.createEntityStructure(prepaymentRequest);
+
+
+
+        // link up to the attachement entity.
+        RelationshipsCreateCreateRequest invoiceToAttachementRelationship =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_INVOICE_TO_ATTACHMENT)
+                        .withFromEntityId(invoiceEntity.getId())
+                        .withToEntityId(attachmentEntity.getId())
+                        .withDescription("Link between Invoice and Attachment Group");
+        createRelationship(invoiceToAttachementRelationship);
+
+        // link up to the creditNote entity.
+        RelationshipsCreateCreateRequest invoiceToCreditNoteRelationship =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_INVOICE_TO_CREDITNOTE)
+                        .withFromEntityId(invoiceEntity.getId())
+                        .withToEntityId(creditNote.getId())
+                        .withDescription("Link between Invoice and Credit Note");
+        createRelationship(invoiceToCreditNoteRelationship);
+
+        RelationshipsCreateCreateRequest invoiceToContactRelationship =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_INVOICE_TO_CONTACT)
+                        .withFromEntityId(invoiceEntity.getId())
+                        .withToEntityId(contactEntity.getId())
+                        .withDescription("Link between Invoice and Contact");
+        createRelationship(invoiceToContactRelationship);
+
+        RelationshipsCreateCreateRequest invoiceToOverpaymentRelationship =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_INVOICE_TO_OVERPAYMENT)
+                        .withFromEntityId(invoiceEntity.getId())
+                        .withToEntityId(overpaymentEntity.getId())
+                        .withDescription("Link between Invoice and Overpayment");
+        createRelationship(invoiceToOverpaymentRelationship);
+
+        RelationshipsCreateCreateRequest invoiceToOverpaymentValidationError =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_INVOICE_TO_VALIDATION_ERROR)
+                        .withFromEntityId(invoiceEntity.getId())
+                        .withToEntityId(validationErr.getId())
+                        .withDescription("Link between Invoice and ValidationError");
+        createRelationship(invoiceToOverpaymentValidationError);
+
+        RelationshipsCreateCreateRequest invoiceToPrepayment =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_INVOICE_TO_PREPAYMENT)
+                        .withFromEntityId(invoiceEntity.getId())
+                        .withToEntityId(prepaymentEntity.getId())
+                        .withDescription("Link between Invoice and Prepayment");
+        createRelationship(invoiceToPrepayment);
+
+        RelationshipsCreateCreateRequest invoiceToPayment =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_INVOICE_TO_PAYMENT)
+                        .withFromEntityId(invoiceEntity.getId())
+                        .withToEntityId(paymentEntity.getId())
+                        .withDescription("Link between Invoice and Payment");
+        createRelationship(invoiceToPayment);
+
+        RelationshipsCreateCreateRequest invoiceToLineItem =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_INVOICE_TO_LINEITEM)
+                        .withFromEntityId(invoiceEntity.getId())
+                        .withToEntityId(lineItemEntity.getId())
+                        .withDescription("Link between Invoice and LineItem");
+        createRelationship(invoiceToLineItem);
+
+        // now lets do second level stuff that hands off invoice
+
+        // Credit note
+
+        RelationshipsCreateCreateRequest creditNoteToPayment =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CREDIT_NOTE_TO_PAYMENT)
+                        .withFromEntityId(creditNote.getId())
+                        .withToEntityId(paymentEntity.getId())
+                        .withDescription("Link between CreditNote and Payment");
+        createRelationship(creditNoteToPayment);
+
+        RelationshipsCreateCreateRequest creditNoteToLineItem =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CREDIT_NOTE_TO_LINEITEM)
+                        .withFromEntityId(creditNote.getId())
+                        .withToEntityId(lineItemEntity.getId())
+                        .withDescription("Link between CreditNote and LineItem");
+        createRelationship(creditNoteToLineItem);
+
+        RelationshipsCreateCreateRequest creditNoteToContact =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CREDIT_NOTE_TO_CONTACT)
+                        .withFromEntityId(creditNote.getId())
+                        .withToEntityId(contactEntity.getId())
+                        .withDescription("Link between CreditNote and Contact");
+        createRelationship(creditNoteToContact);
+
+        RelationshipsCreateCreateRequest creditNoteToAttachment =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CREDIT_NOTE_TO_ATTACHMENT)
+                        .withFromEntityId(creditNote.getId())
+                        .withToEntityId(attachmentEntity.getId())
+                        .withDescription("Link between CreditNote and Attachment");
+        createRelationship(creditNoteToAttachment);
+
+        RelationshipsCreateCreateRequest creditNoteToAllocation =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_CREDIT_NOTE_TO_ALLOCATION)
+                        .withFromEntityId(creditNote.getId())
+                        .withToEntityId(allocationEntity.getId())
+                        .withDescription("Link between CreditNote and Allocation");
+        createRelationship(creditNoteToAllocation);
+
+        RelationshipsCreateCreateRequest paymentToContact =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_PAYMENT_TO_CONTACT)
+                        .withFromEntityId(paymentEntity.getId())
+                        .withToEntityId(contactEntity.getId())
+                        .withDescription("Link between Payment and Contact");
+        createRelationship(paymentToContact);
+
+        RelationshipsCreateCreateRequest paymentToAttchment =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_PAYMENT_TO_ATTACHMENT)
+                        .withFromEntityId(paymentEntity.getId())
+                        .withToEntityId(attachmentEntity.getId())
+                        .withDescription("Link between Payment and Attachment");
+        createRelationship(paymentToAttchment);
+
+        RelationshipsCreateCreateRequest paymentToAccount =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_PAYMENT_TO_ACCOUNT)
+                        .withFromEntityId(paymentEntity.getId())
+                        .withToEntityId(accountEntity.getId())
+                        .withDescription("Link between Payment and Account");
+        createRelationship(paymentToAccount);
+
+        RelationshipsCreateCreateRequest paymentToAllocation =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_PAYMENT_TO_ALLOCATION)
+                        .withFromEntityId(paymentEntity.getId())
+                        .withToEntityId(accountEntity.getId())
+                        .withDescription("Link between Payment and Allocation");
+        createRelationship(paymentToAllocation);
+
+        RelationshipsCreateCreateRequest paymentToLineItem =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_PAYMENT_TO_LINEITEM)
+                        .withFromEntityId(paymentEntity.getId())
+                        .withToEntityId(lineItemEntity.getId())
+                        .withDescription("Link between Payment and LineItem");
+        createRelationship(paymentToLineItem);
+
+        // Prepayment relationships
+        RelationshipsCreateCreateRequest prepaymentToLineItem =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_PREPAYMENT_TO_LINEITEM)
+                        .withFromEntityId(prepaymentEntity.getId())
+                        .withToEntityId(lineItemEntity.getId())
+                        .withDescription("Link between Preayment and LineItem");
+        createRelationship(prepaymentToLineItem);
+
+        RelationshipsCreateCreateRequest prepaymentToAttachment =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_PREPAYMENT_TO_ATTACHMENT)
+                        .withFromEntityId(prepaymentEntity.getId())
+                        .withToEntityId(attachmentEntity.getId())
+                        .withDescription("Link between Preayment and Attachment");
+        createRelationship(prepaymentToAttachment);
+
+        RelationshipsCreateCreateRequest prepaymentToContact =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_PREPAYMENT_TO_CONTACT)
+                        .withFromEntityId(prepaymentEntity.getId())
+                        .withToEntityId(contactEntity.getId())
+                        .withDescription("Link between Preayment and Contact");
+        createRelationship(prepaymentToContact);
+
+        RelationshipsCreateCreateRequest prepaymentToPayment =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_PREPAYMENT_TO_PAYMENT)
+                        .withFromEntityId(prepaymentEntity.getId())
+                        .withToEntityId(paymentEntity.getId())
+                        .withDescription("Link between Preayment and Payment");
+        createRelationship(prepaymentToPayment);
+
+        RelationshipsCreateCreateRequest prepaymentToAllocation =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_PREPAYMENT_TO_ALLOCATION)
+                        .withFromEntityId(prepaymentEntity.getId())
+                        .withToEntityId(allocationEntity.getId())
+                        .withDescription("Link between Preayment and Payment");
+        createRelationship(prepaymentToPayment);
+
+        // Overpayment relationships
+
+        RelationshipsCreateCreateRequest overpaymentToAllocation =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_OVERPAYMENT_TO_ALLOCATION)
+                        .withFromEntityId(overpaymentEntity.getId())
+                        .withToEntityId(allocationEntity.getId())
+                        .withDescription("Link between overpayment and Allocation");
+        createRelationship(overpaymentToAllocation);
+
+        RelationshipsCreateCreateRequest overpaymentToAttachment =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_OVERPAYMENT_TO_ATTACHMENT)
+                        .withFromEntityId(overpaymentEntity.getId())
+                        .withToEntityId(allocationEntity.getId())
+                        .withDescription("Link between overpayment and Attachment");
+        createRelationship(overpaymentToAttachment);
+
+        RelationshipsCreateCreateRequest overpaymentToLineItem =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_OVERPAYMENT_TO_LINEITEM)
+                        .withFromEntityId(overpaymentEntity.getId())
+                        .withToEntityId(lineItemEntity.getId())
+                        .withDescription("Link between overpayment and LineItem");
+        createRelationship(overpaymentToLineItem);
+
+        RelationshipsCreateCreateRequest overpaymentToPayment =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_OVERPAYMENT_TO_PAYMENT)
+                        .withFromEntityId(overpaymentEntity.getId())
+                        .withToEntityId(paymentEntity.getId())
+                        .withDescription("Link between overpayment and Payment");
+        createRelationship(overpaymentToPayment);
+
+        RelationshipsCreateCreateRequest overpaymentToContact =
+                new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_OVERPAYMENT_TO_CONTACT)
+                        .withFromEntityId(overpaymentEntity.getId())
+                        .withToEntityId(contactEntity.getId())
+                        .withDescription("Link between overpayment and Contact");
+        createRelationship(overpaymentToContact);
+
+    }
+
     public void createContactClass(String prefix) {
         entityServiceWrapper.auth();
         relationshipServiceWrapper.auth();
