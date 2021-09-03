@@ -24,7 +24,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     public void upsertInvoice(Invoice invoice) {
-        invoice.getPayments().get().get
 
 
     }

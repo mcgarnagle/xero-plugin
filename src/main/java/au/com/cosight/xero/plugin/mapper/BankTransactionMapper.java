@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class BankTransactionMapper {
+public class BankTransactionMapper extends BaseMapper {
     public static final String BANK_TRANSACTION_INSTANCES = "BankInstances";
     public static final String CONTACT_INSTANCES = "ContactInstances";
     public static final String ACCOUNT_INSTANCES = "AccountInstances";
@@ -39,10 +39,7 @@ public class BankTransactionMapper {
 //        contactInstanceValues.add(new InstanceValue("Contact", bankTransaction.getc));
         bankTransactionInstanceValues.add(new InstanceValue("CurrencyCode", bankTransaction.getCurrencyCode()));
         bankTransactionInstanceValues.add(new InstanceValue("CurrencyRate", bankTransaction.getCurrencyRate()));
-        LocalDate instant = bankTransaction.getDateAsDate();
-        Date date = DateTimeUtils.toSqlDate(instant);
-        java.util.Date newDate = new java.util.Date(date.getTime());
-        bankTransactionInstanceValues.add(new InstanceValue("Date", newDate));
+        bankTransactionInstanceValues.add(new InstanceValue("Date", getDate(bankTransaction.getDateAsDate())));
         bankTransactionInstanceValues.add(new InstanceValue("HasAttachments", bankTransaction.getHasAttachments()));
         bankTransactionInstanceValues.add(new InstanceValue("IsReconciled", bankTransaction.getIsReconciled()));
         bankTransactionInstanceValues.add(new InstanceValue("LineAmountTypes", bankTransaction.getLineAmountTypes().getValue()));
