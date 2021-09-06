@@ -3,10 +3,14 @@ package au.com.cosight.xero.plugin.structure;
 import au.com.cosight.entity.domain.EntityInstance;
 import au.com.cosight.entity.service.dto.RelationshipsDTO;
 
-public class InstanceLinks {
+public class InstanceLink {
     private EntityInstance instanceFrom;
+    private String instanceFromKey;
     private EntityInstance instanceTo;
+    private String instanceToKey;
     private String relationshipName;
+
+
 
     public RelationshipsDTO getRelationshipDTO() {
         RelationshipsDTO relationshipsDTO = new RelationshipsDTO();
@@ -15,6 +19,22 @@ public class InstanceLinks {
         relationshipsDTO.setName(relationshipName);
         relationshipsDTO.setAllowDuplicate(false);
         return relationshipsDTO;
+    }
+
+    public String getInstanceFromKey() {
+        return instanceFromKey;
+    }
+
+    public void setInstanceFromKey(String instanceFromKey) {
+        this.instanceFromKey = instanceFromKey;
+    }
+
+    public String getInstanceToKey() {
+        return instanceToKey;
+    }
+
+    public void setInstanceToKey(String instanceToKey) {
+        this.instanceToKey = instanceToKey;
     }
 
     public EntityInstance getInstanceFrom() {

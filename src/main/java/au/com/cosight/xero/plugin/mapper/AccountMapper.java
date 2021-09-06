@@ -24,7 +24,7 @@ public class AccountMapper {
         accountInstanceValues.add(new InstanceValue("BankAccountNumber", account.getBankAccountNumber()));
         accountInstanceValues.add(new InstanceValue("BankAccountType", account.getBankAccountType()));
         accountInstanceValues.add(new InstanceValue("Code", account.getCode()));
-        if(account.getSystemAccount()!=null){
+        if (account.getSystemAccount() != null) {
             accountInstanceValues.add(new InstanceValue("SystemAccount", account.getSystemAccount().getValue()));
         }
         accountInstanceValues.add(new InstanceValue("AddToWatchlist", account.getAddToWatchlist()));
@@ -40,7 +40,7 @@ public class AccountMapper {
         accountInstanceValues.add(new InstanceValue("Status", account.getStatus()));
         accountInstanceValues.add(new InstanceValue("Type", account.getType()));
         accountInstanceValues.add(new InstanceValue("TaxType", account.getTaxType()));
-        if(account.getUpdatedDateUTCAsDate()!=null) {
+        if (account.getUpdatedDateUTCAsDate() != null) {
             accountInstanceValues.add(new InstanceValue("UpdatedDateUTC", DateTimeUtils.toDate(account.getUpdatedDateUTCAsDate().toInstant())));
         }
 
@@ -50,15 +50,7 @@ public class AccountMapper {
         // ValidationError
         if (account.getValidationErrors() != null && account.getValidationErrors().size() > 0) {
             List<ValidationError> xeroObjectList = account.getValidationErrors();
-            xeroObjectList.forEach(xeroObject -> {
-                EntityInstance cosightInstance = new EntityInstance();
-                cosightInstance.set_vertexName(PluginConstants.XERO_ENTITY_VALIDATION_ERROR);
-                cosightInstance.set_label(PluginConstants.XERO_ENTITY_VALIDATION_ERROR);
-                List<InstanceValue> cosightInstanceValues = new ArrayList<>();
-                cosightInstance.setInstanceValues(cosightInstanceValues);
-                cosightInstanceValues.add(new InstanceValue("Message", xeroObject.getMessage()));
-                instanceList.add(cosightInstance);
-            });
+            xeroObjectList.forEach(xeroObject -> instanceList.add(ValidationErrorMapper.toInstance(xeroObject)));
         }
 
         return instanceList;

@@ -1,5 +1,7 @@
 package au.com.cosight.xero.plugin.service;
 
+import au.com.cosight.common.dto.plugin.helper.EntityServiceWrapper;
+import au.com.cosight.common.dto.plugin.helper.RelationshipServiceWrapper;
 import au.com.cosight.entity.domain.DatafieldConfig;
 import au.com.cosight.entity.domain.EntitiesCreateCreateRequest;
 import au.com.cosight.entity.domain.RelationshipsCreateCreateRequest;
@@ -9,8 +11,6 @@ import au.com.cosight.entity.service.dto.DataFieldsDTO;
 import au.com.cosight.entity.service.dto.EntitiesDTO;
 import au.com.cosight.entity.service.dto.ExpandedEntitiesDTO;
 import au.com.cosight.entity.service.dto.RelationshipsDTO;
-import au.com.cosight.sdk.plugin.runtime.helper.EntityServiceWrapper;
-import au.com.cosight.sdk.plugin.runtime.helper.RelationshipServiceWrapper;
 import au.com.cosight.xero.plugin.PluginConstants;
 import com.xero.models.accounting.Account;
 import org.springframework.stereotype.Service;
@@ -35,8 +35,10 @@ public class EntityManagementServiceImpl {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             if (e.getMessage().contains("Duplicated Entity Name")) {
-                System.out.println("Entity already created - assume everything is done for now, return");
+//                System.out.println("Entity already created - assume everything is done for now, return");
+                System.out.println("Duplicate entity name " + request.getName() + " : " + request.getProjectId());
                 ExpandedEntitiesDTO dto = entityServiceWrapper.getEntityByClassname(request.getName());
+
                 theObject = dto.getEnitiy();
             } else {
                 return Optional.empty();
@@ -125,7 +127,7 @@ public class EntityManagementServiceImpl {
                         .withToEntityId(validationErr.getId())
                         .withDescription("Link between Contact and Address");
 
-           createRelationship(contactToAddress);
+        createRelationship(contactToAddress);
 
     }
 
@@ -283,7 +285,7 @@ public class EntityManagementServiceImpl {
         relationshipServiceWrapper.auth();
         EntitiesCreateCreateRequest request = new EntitiesCreateCreateRequest()
                 .withProjectId("0")
-                .withName(prefix + PluginConstants.XERO_ENTITY_INVOICE )
+                .withName(prefix + PluginConstants.XERO_ENTITY_INVOICE)
                 .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
                 .addField(new DataFieldsDTO().withName("AmountCredited")
                         .withDataType(CosightDataType.DOUBLE))
@@ -442,7 +444,7 @@ public class EntityManagementServiceImpl {
                         .withDataType(CosightDataType.DATE_TIME))
                 .addIndex("CreditNoteId");
 
-        EntitiesDTO creditNote = entityServiceWrapper.createEntityStructure(creditNoteRequest);
+        EntitiesDTO creditNote = createEntity(creditNoteRequest).orElseThrow(IllegalStateException::new);
 
 
         // create allocation
@@ -457,7 +459,7 @@ public class EntityManagementServiceImpl {
                 .addField(new DataFieldsDTO().withName("Date")
                         .withDataType(CosightDataType.DATE));
 
-        EntitiesDTO allocationEntity = entityServiceWrapper.createEntityStructure(allocationRequest);
+        EntitiesDTO allocationEntity = createEntity(allocationRequest).orElseThrow(IllegalStateException::new);
 
         // create payment
         EntitiesCreateCreateRequest paymentRequest = new EntitiesCreateCreateRequest()
@@ -517,8 +519,7 @@ public class EntityManagementServiceImpl {
                                 .withDataListItem("VOIDED")))
                 .addField(new DataFieldsDTO().withName("UpdatedDateUTC")
                         .withDataType(CosightDataType.DATE_TIME));
-        EntitiesDTO paymentEntity = entityServiceWrapper.createEntityStructure(paymentRequest);
-
+        EntitiesDTO paymentEntity = createEntity(paymentRequest).orElseThrow(IllegalStateException::new);
 
 
         //create overpayment
@@ -571,8 +572,7 @@ public class EntityManagementServiceImpl {
                 .addField(new DataFieldsDTO().withName("UpdatedDateUTC")
                         .withDataType(CosightDataType.DATE_TIME));
 
-        EntitiesDTO overpaymentEntity = entityServiceWrapper.createEntityStructure(overpaymentRequest);
-
+        EntitiesDTO overpaymentEntity = createEntity(overpaymentRequest).orElseThrow(IllegalStateException::new);
 
 
         //create prepayment
@@ -580,7 +580,7 @@ public class EntityManagementServiceImpl {
                 .withProjectId("0")
                 .withName(prefix + PluginConstants.XERO_ENTITY_PREPAYMENT)
                 .withEntityVisibilityType(EntityVisibilityTypes.GLOBAL)
-                .addField(new DataFieldsDTO().withName("PrepaymentId").withLabel(true))
+                .addField(new DataFieldsDTO().withName("PrepaymentId").withDataType(CosightDataType.STRING).withLabel(true))
                 .addField(new DataFieldsDTO().withName("AppliedAmount")
                         .withDataType(CosightDataType.DOUBLE))
                 .addField(new DataFieldsDTO().withName("CurrencyCode")
@@ -626,8 +626,7 @@ public class EntityManagementServiceImpl {
                 .addField(new DataFieldsDTO().withName("UpdatedDateUTC")
                         .withDataType(CosightDataType.DATE_TIME));
 
-        EntitiesDTO prepaymentEntity = entityServiceWrapper.createEntityStructure(prepaymentRequest);
-
+        EntitiesDTO prepaymentEntity = createEntity(prepaymentRequest).orElseThrow(IllegalStateException::new);
 
 
         // link up to the attachement entity.
@@ -751,7 +750,7 @@ public class EntityManagementServiceImpl {
         RelationshipsCreateCreateRequest paymentToAllocation =
                 new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_PAYMENT_TO_ALLOCATION)
                         .withFromEntityId(paymentEntity.getId())
-                        .withToEntityId(accountEntity.getId())
+                        .withToEntityId(allocationEntity.getId())
                         .withDescription("Link between Payment and Allocation");
         createRelationship(paymentToAllocation);
 
@@ -796,7 +795,7 @@ public class EntityManagementServiceImpl {
                         .withFromEntityId(prepaymentEntity.getId())
                         .withToEntityId(allocationEntity.getId())
                         .withDescription("Link between Preayment and Payment");
-        createRelationship(prepaymentToPayment);
+        createRelationship(prepaymentToAllocation);
 
         // Overpayment relationships
 
@@ -810,7 +809,7 @@ public class EntityManagementServiceImpl {
         RelationshipsCreateCreateRequest overpaymentToAttachment =
                 new RelationshipsCreateCreateRequest().withName(PluginConstants.XERO_RELATIONSHIP_OVERPAYMENT_TO_ATTACHMENT)
                         .withFromEntityId(overpaymentEntity.getId())
-                        .withToEntityId(allocationEntity.getId())
+                        .withToEntityId(attachmentEntity.getId())
                         .withDescription("Link between overpayment and Attachment");
         createRelationship(overpaymentToAttachment);
 

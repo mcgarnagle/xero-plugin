@@ -7,9 +7,7 @@ import com.xero.models.accounting.BankTransaction;
 import com.xero.models.accounting.LineItem;
 import com.xero.models.accounting.ValidationError;
 import org.threeten.bp.DateTimeUtils;
-import org.threeten.bp.LocalDate;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,7 +59,7 @@ public class BankTransactionMapper extends BaseMapper {
         }
         // setup Contact
         if (bankTransaction.getContact() != null) {
-            List<EntityInstance> contact = ContactMapper.toEntityInstance(bankTransaction.getContact());
+            List<EntityInstance> contact = ContactMapper.toEntityInstances(bankTransaction.getContact());
             contactInstanceList.addAll(contact);
         }
 
@@ -69,44 +67,15 @@ public class BankTransactionMapper extends BaseMapper {
         if (bankTransaction.getLineItems() != null) {
             List<LineItem> lineItems = bankTransaction.getLineItems();
             lineItems.forEach(lineItem -> {
-                EntityInstance lineItemInstance = new EntityInstance();
-                List<InstanceValue> lineItemInstanceValues = new ArrayList<>();
-                lineItemInstance.setInstanceValues(lineItemInstanceValues);
-                lineItemInstance.set_label(PluginConstants.XERO_ENTITY_LINE_ITEM);
-                lineItemInstance.set_vertexName(PluginConstants.XERO_ENTITY_LINE_ITEM);
-
-                lineItemInstanceValues.add(new InstanceValue("AccountId", lineItem.getAccountID().toString()));
-                lineItemInstanceValues.add(new InstanceValue("AccountCode", lineItem.getAccountCode()));
-                lineItemInstanceValues.add(new InstanceValue("Description", lineItem.getDescription()));
-                lineItemInstanceValues.add(new InstanceValue("LineItemId", lineItem.getLineItemID()));
-                lineItemInstanceValues.add(new InstanceValue("ItemCode", lineItem.getItemCode()));
-                lineItemInstanceValues.add(new InstanceValue("DiscountAmount", lineItem.getDiscountAmount()));
-                lineItemInstanceValues.add(new InstanceValue("DiscountRate", lineItem.getDiscountRate()));
-                lineItemInstanceValues.add(new InstanceValue("LineAmount", lineItem.getLineAmount()));
-                lineItemInstanceValues.add(new InstanceValue("Quantity", lineItem.getQuantity()));
-                lineItemInstanceValues.add(new InstanceValue("RepeatingInvoiceId", lineItem.getRepeatingInvoiceID().toString()));
-                lineItemInstanceValues.add(new InstanceValue("TaxAmount", lineItem.getTaxAmount()));
-                lineItemInstanceValues.add(new InstanceValue("TaxType", lineItem.getTaxType()));
-                lineItemInstanceValues.add(new InstanceValue("UnitAmount", lineItem.getUnitAmount()));
-
-                bankTransactionInstanceList.add(lineItemInstance);
+                bankTransactionInstanceList.add(LineItemMapper.toInstance(lineItem));
 
                 if (lineItem.getTracking() != null && lineItem.getTracking().size() > 0) {
                     lineItem.getTracking().forEach(lineItemTracking -> {
-                        EntityInstance lineItemTrackingInstance = new EntityInstance();
-                        List<InstanceValue> lineItemTrackingInstanceValues = new ArrayList<>();
-                        lineItemTrackingInstance.set_label(PluginConstants.XERO_ENTITY_LINE_ITEM_TRACKING);
-                        lineItemTrackingInstance.set_vertexName(PluginConstants.XERO_ENTITY_LINE_ITEM_TRACKING);
-                        lineItemTrackingInstance.setInstanceValues(lineItemTrackingInstanceValues);
 
-                        lineItemTrackingInstanceValues.add(new InstanceValue("", lineItemTracking.getName()));
-                        lineItemTrackingInstanceValues.add(new InstanceValue("", lineItemTracking.getTrackingCategoryID()));
-                        lineItemTrackingInstanceValues.add(new InstanceValue("", lineItemTracking.getTrackingOptionID()));
-                        lineItemTrackingInstanceValues.add(new InstanceValue("", lineItemTracking.getOption()));
-
+                        EntityInstance lineItemtrack = LineItemTrackingMapper.toInstance(lineItemTracking);
                         // hack to store reference - remove this later
-                        lineItemTrackingInstanceValues.add(new InstanceValue("LineItem", lineItem.getLineItemID()));
-                        bankTransactionInstanceList.add(lineItemTrackingInstance);
+                        lineItemtrack.getInstanceValues().add(new InstanceValue("LineItem", lineItem.getLineItemID()));
+                        bankTransactionInstanceList.add(lineItemtrack);
                     });
                 }
             });
@@ -115,15 +84,7 @@ public class BankTransactionMapper extends BaseMapper {
         // setup validation errors
         if (bankTransaction.getValidationErrors() != null) {
             List<ValidationError> xeroObjectList = bankTransaction.getValidationErrors();
-            xeroObjectList.forEach(xeroObject -> {
-                EntityInstance cosightInstance = new EntityInstance();
-                cosightInstance.set_vertexName(PluginConstants.XERO_ENTITY_VALIDATION_ERROR);
-                cosightInstance.set_label(PluginConstants.XERO_ENTITY_VALIDATION_ERROR);
-                List<InstanceValue> cosightInstanceValues = new ArrayList<>();
-                cosightInstance.setInstanceValues(cosightInstanceValues);
-                cosightInstanceValues.add(new InstanceValue("Message", xeroObject.getMessage()));
-                bankTransactionInstanceList.add(cosightInstance);
-            });
+            xeroObjectList.forEach(xeroObject -> bankTransactionInstanceList.add(ValidationErrorMapper.toInstance(xeroObject)));
         }
 
         return returnMap;

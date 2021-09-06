@@ -10,13 +10,24 @@ import java.sql.Date;
 public class BaseMapper {
     public static java.util.Date getDate(LocalDate localDate) {
 //        LocalDate instant = bankTransaction.getDateAsDate();
-        Date date = DateTimeUtils.toSqlDate(localDate);
-        java.util.Date newDate = new java.util.Date(date.getTime());
+        java.util.Date newDate = null;
+        try {
+            Date date = DateTimeUtils.toSqlDate(localDate);
+            newDate = new java.util.Date(date.getTime());
+        } catch (Exception e) {
+        }
         return newDate;
 
     }
 
     public static java.util.Date getDate(OffsetDateTime offset) {
-        return DateTimeUtils.toDate(offset.toInstant());
+        if(offset!=null){
+            return DateTimeUtils.toDate(offset.toInstant());
+        }
+        else{
+            return null;
+        }
     }
+
+
 }

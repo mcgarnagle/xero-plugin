@@ -1,12 +1,12 @@
 package au.com.cosight.xero.plugin;
 
+import au.com.cosight.common.dto.plugin.CosightExecutionContext;
 import au.com.cosight.sdk.auth.external.oauth.ExternalOAuth2Credentials;
-import au.com.cosight.sdk.plugin.runtime.CosightExecutionContext;
 import au.com.cosight.xero.plugin.service.EntityManagementServiceImpl;
-import au.com.cosight.xero.plugin.service.ForexQuoteService;
 import au.com.cosight.xero.plugin.service.xero.AccountService;
 import au.com.cosight.xero.plugin.service.xero.BankTransactionService;
 import au.com.cosight.xero.plugin.service.xero.ContactService;
+import au.com.cosight.xero.plugin.service.xero.InvoiceService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xero.api.ApiClient;
 import com.xero.api.client.AccountingApi;
@@ -31,25 +31,25 @@ public class InitAppService implements CommandLineRunner {
 
 
     private final CosightExecutionContext cosightExecutionContext;
-    private final ForexQuoteService forexQuoteService;
     private final ObjectMapper objectMapper;
     private final EntityManagementServiceImpl entityManagementService;
     private final ContactService contactService;
     private final AccountService accountService;
     private final BankTransactionService bankTransactionService;
+    private final InvoiceService invoiceService;
 
 
-    public InitAppService(CosightExecutionContext cosightExecutionContext, ForexQuoteService forexQuoteService,
+    public InitAppService(CosightExecutionContext cosightExecutionContext,
                           ObjectMapper objectMapper, EntityManagementServiceImpl entityManagementService,
                           ContactService contactService, AccountService accountService,
-                          BankTransactionService bankTransactionService) {
+                          BankTransactionService bankTransactionService, InvoiceService invoiceService) {
         this.cosightExecutionContext = cosightExecutionContext;
-        this.forexQuoteService = forexQuoteService;
         this.objectMapper = objectMapper;
         this.entityManagementService = entityManagementService;
         this.contactService = contactService;
         this.accountService = accountService;
         this.bankTransactionService = bankTransactionService;
+        this.invoiceService = invoiceService;
     }
 
     @Override
@@ -166,10 +166,11 @@ public class InitAppService implements CommandLineRunner {
                         null, false, false, null, false);
 
                 invoices.getInvoices().forEach(invoice -> {
-
+                    invoiceService.upsertInvoice(invoice);
                     // iplement invoices
                 });
             } catch (Exception e) {
+                e.printStackTrace();
                 logger.error("error getting Invoices {} ", e.getMessage());
             }
 

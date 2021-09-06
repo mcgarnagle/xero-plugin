@@ -1,10 +1,10 @@
 package au.com.cosight.xero.plugin.service.xero;
 
+import au.com.cosight.common.dto.plugin.CosightExecutionContext;
+import au.com.cosight.common.dto.plugin.helper.EntityServiceWrapper;
+import au.com.cosight.common.dto.plugin.helper.RelationshipServiceWrapper;
 import au.com.cosight.entity.domain.EntityInstance;
 import au.com.cosight.entity.service.dto.RelationshipsDTO;
-import au.com.cosight.sdk.plugin.runtime.CosightExecutionContext;
-import au.com.cosight.sdk.plugin.runtime.helper.EntityServiceWrapper;
-import au.com.cosight.sdk.plugin.runtime.helper.RelationshipServiceWrapper;
 import au.com.cosight.xero.plugin.PluginConstants;
 import au.com.cosight.xero.plugin.mapper.AccountMapper;
 import au.com.cosight.xero.plugin.mapper.ContactMapper;
