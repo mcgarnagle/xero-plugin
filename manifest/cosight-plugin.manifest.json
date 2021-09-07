@@ -73,6 +73,21 @@
       ]
     },
     {
+      "name": "getInvoices",
+      "showPrompt": false,
+      "ruleProcessType": "merge",
+      "batchSize": "100",
+      "mappingFields": [],
+      "parameters": [
+        {
+          "name": "OrganisationName",
+          "prompt": "Organisation Name from XERO",
+          "type": "STRING",
+          "promptType": "simple"
+        }
+      ]
+    },
+    {
       "name": "init",
       "showPrompt": false,
       "ruleProcessType": "merge",

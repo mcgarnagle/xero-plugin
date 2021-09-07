@@ -53,13 +53,9 @@ public class EntityManagementServiceImpl {
         try {
             relo = relationshipServiceWrapper.createRelationship(request);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             if (e.getMessage().contains("Duplicated RelationshipName")) {
-                System.out.println("Relationship already created - continue");
-
                 // will have to think about an update mechanism here with versioning etc.
             } else {
-                e.printStackTrace();
                 return Optional.empty();
             }
         }
